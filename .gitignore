@@ -35,6 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+<<<<<<< HEAD
 
 # config files
 application.yaml
+=======
+>>>>>>> 5fd5858 (commit test)
