@@ -1,31 +1,5 @@
 package com.likelion.oegaein.controller;
 
-<<<<<<< HEAD
-import com.likelion.oegaein.domain.Message;
-import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
-
-@Controller
-@RequiredArgsConstructor
-public class ChatController {
-    private final SimpMessagingTemplate simpMessagingTemplate;
-    private final SimpMessageSendingOperations simpMessageSendingOperations;
-    @MessageMapping("/message")
-    private Message receivePublicMessage(@Payload Message message){
-        simpMessageSendingOperations.convertAndSend("/chatroom/public", message);
-        return message;
-    }
-
-    @MessageMapping("/private-message")
-    public Message receivePrivateMessage(@Payload Message message){
-        simpMessagingTemplate.convertAndSendToUser(message.getReceiverName(), "/private", message);
-        return message;
-=======
 import com.likelion.oegaein.domain.MessageStatus;
 import com.likelion.oegaein.dto.MessageRequest;
 import com.likelion.oegaein.dto.MessageRequestData;
@@ -58,6 +32,5 @@ public class ChatController {
             MessageResponse response = chatService.saveMessage(MessageRequestData.toMessageRequestData(message));
         }
         return "test";
->>>>>>> 5fd5858 (commit test)
     }
 }

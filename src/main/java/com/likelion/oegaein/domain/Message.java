@@ -1,20 +1,7 @@
 package com.likelion.oegaein.domain;
 
-import lombok.*;
-<<<<<<< HEAD
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-public class Message {
-    private String senderName;
-    private String receiverName;
-    private String message;
-    private String date;
-    private Status status;
-=======
+import lombok.Builder;
+import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -33,5 +20,4 @@ public class Message {
     private MessageStatus messageStatus; // 메시지 타입
     @CreatedDate
     private LocalDateTime date; // 메시지 발신 날짜
->>>>>>> 5fd5858 (commit test)
 }
