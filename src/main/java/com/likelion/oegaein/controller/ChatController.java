@@ -20,17 +20,12 @@ public class ChatController {
     private final SimpMessageSendingOperations simpMessageSendingOperations;
     private final ChatService chatService;
     // constant
-    private final String CHAT_ROOM_JOIN_MSG = "님이 입장하였습니다.";
+    private final String CHAT_SUB_PATH = "/sub/chatroom/";
+
     @MessageMapping("/message")
-    private String sendMessage(@Payload MessageRequest message){
-        if(message.getMessageStatus().equals(MessageStatus.JOIN)){ // 채팅방 입장
-            log.info("Send Enter Message");
-            message.setMessage(message.getSenderName() + CHAT_ROOM_JOIN_MSG);
-            // DB 저장 로직
-        }else if(message.getMessageStatus().equals(MessageStatus.MESSAGE)){
-            log.info("Send Normal Message");
-            MessageResponse response = chatService.saveMessage(MessageRequestData.toMessageRequestData(message));
-        }
-        return "test";
+    private void sendMessage(@Payload MessageRequest message){
+        log.info("Request to send message");
+        MessageResponse responseMessage = chatService.saveMessage(MessageRequestData.toMessageRequestData(message));
+        simpMessageSendingOperations.convertAndSend(CHAT_SUB_PATH + message.getChattingRoomId(), responseMessage);
     }
 }
