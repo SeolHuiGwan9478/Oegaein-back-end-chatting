@@ -33,4 +33,9 @@ public class ChatService {
         messageRepository.save(message);
         return new MessageResponse(message);
     }
+
+    // write back pattern
+    private void commitMessageCache(){
+
+    }
 }
