@@ -26,6 +26,6 @@ public class ChatController {
     private void sendMessage(@Payload MessageRequest message){
         log.info("Request to send message");
         MessageResponse responseMessage = chatService.saveMessage(MessageRequestData.toMessageRequestData(message));
-        simpMessageSendingOperations.convertAndSend(CHAT_SUB_PATH + message.getChattingRoomId(), responseMessage);
+        simpMessageSendingOperations.convertAndSend(CHAT_SUB_PATH + message.getRoomId(), responseMessage);
     }
 }

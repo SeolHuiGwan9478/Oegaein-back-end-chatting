@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 @Repository
 @RequiredArgsConstructor
-public class RedisMessageCacheRepository {
+public class RedisRepository {
     private final RedisTemplate<String, LinkedList<Message>> redisTemplate;
 
     @Value("${spring.redis.expire}")
