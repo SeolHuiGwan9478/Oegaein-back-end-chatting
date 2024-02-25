@@ -23,15 +23,12 @@ public class ChatService {
     // constant
     private final String CHAT_JOIN_MSG = "님이 입장하였습니다.";
     private final int MAX_CACHE_SIZE_EACH_ROOM = 3;
-    private final static int messageQueueSize = 5;
 
     // save chatting content
     public MessageResponse saveMessage(MessageRequestData dto){
         if(dto.getMessageStatus().equals(MessageStatus.JOIN)){ // JOIN 메시지 변환
             dto.setMessage(dto.getSenderName() + CHAT_JOIN_MSG);
         }
-        System.out.println("여기!!!");
-        System.out.println(dto.getRoomId());
         Message message = Message.builder()
                 .roomId(dto.getRoomId())
                 .senderName(dto.getSenderName())
