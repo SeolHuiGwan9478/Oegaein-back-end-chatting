@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class MessageResponse {
+public class MessageResponse implements ResponseDto{
     private String roomId; // 채팅방 ID
     private String senderName; // 보낸 회원 이름
     private String message; // 메시지 내용
