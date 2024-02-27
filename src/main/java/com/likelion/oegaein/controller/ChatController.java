@@ -21,7 +21,7 @@ public class ChatController {
     private final SimpMessageSendingOperations simpMessageSendingOperations;
     private final ChatService chatService;
     // constant
-    private final String CHAT_SUB_PATH = "/sub/chatroom/";
+    private final String CHAT_SUB_PATH = "/topic/";
 
     @MessageMapping("/message")
     private void sendMessage(@Payload MessageRequest message){
