@@ -1,8 +1,11 @@
 package com.likelion.oegaein.service;
 
+import com.likelion.oegaein.dto.FindMessageData;
+import com.likelion.oegaein.dto.FindMessagesResponse;
+import com.likelion.oegaein.dto.MessageRequestData;
+import com.likelion.oegaein.dto.MessageResponse;
 import com.likelion.oegaein.domain.Message;
 import com.likelion.oegaein.domain.MessageStatus;
-import com.likelion.oegaein.dto.*;
 import com.likelion.oegaein.repository.MessageRepository;
 import com.likelion.oegaein.repository.RedisRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -26,7 +28,7 @@ public class ChatService {
     // constant
     private final String CHAT_JOIN_MSG = "님이 입장하였습니다.";
     private final String NOT_FOUND_ERR_MSG = "Not Found: ";
-    private final int MAX_CACHE_SIZE_EACH_ROOM = 50;
+    private final int MAX_CACHE_SIZE_EACH_ROOM = 3;
 
     // save chatting content
     public MessageResponse saveMessage(MessageRequestData dto){
@@ -64,7 +66,7 @@ public class ChatService {
     public FindMessagesResponse getMessages(String roomId){
         List<Message> messages; // messages
         // look aside pattern
-        if(!redisRepository.containsKey(roomId)){ // cache miss
+        if(!redisRepository.containsKey(roomId) || redisRepository.get(roomId).isEmpty()){ // cache miss
             List<Message> findMessages = getMessagesInDb(roomId);
             if(findMessages.isEmpty()){ // no data in db
                 throw new IllegalArgumentException(NOT_FOUND_ERR_MSG + roomId);

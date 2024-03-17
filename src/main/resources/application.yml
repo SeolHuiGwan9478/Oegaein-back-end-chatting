@@ -10,3 +10,6 @@ spring:
       host: localhost
       port: 27017
       database: testdb
+
+server:
+  port: 8081

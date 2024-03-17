@@ -1,7 +1,7 @@
 package com.likelion.oegaein.controller;
 
-import com.likelion.oegaein.dto.*;
 import com.likelion.oegaein.service.ChatService;
+import com.likelion.oegaein.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class ChatController {
+public class MessageController {
     // DI
     private final SimpMessageSendingOperations simpMessageSendingOperations;
     private final ChatService chatService;
