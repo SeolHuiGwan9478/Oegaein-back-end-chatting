@@ -1,4 +1,4 @@
-package com.likelion.oegaein.domain;
+package com.likelion.oegaein.domain.chat;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

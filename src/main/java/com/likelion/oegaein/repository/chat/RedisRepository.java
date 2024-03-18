@@ -1,6 +1,6 @@
-package com.likelion.oegaein.repository;
+package com.likelion.oegaein.repository.chat;
 
-import com.likelion.oegaein.domain.Message;
+import com.likelion.oegaein.domain.chat.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;

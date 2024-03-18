@@ -1,6 +1,6 @@
 package com.likelion.oegaein.config;
 
-import com.likelion.oegaein.domain.Message;
+import com.likelion.oegaein.domain.chat.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;

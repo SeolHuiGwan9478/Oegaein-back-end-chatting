@@ -1,13 +1,13 @@
 package com.likelion.oegaein.service;
 
-import com.likelion.oegaein.dto.FindMessageData;
-import com.likelion.oegaein.dto.FindMessagesResponse;
-import com.likelion.oegaein.dto.MessageRequestData;
-import com.likelion.oegaein.dto.MessageResponse;
-import com.likelion.oegaein.domain.Message;
-import com.likelion.oegaein.domain.MessageStatus;
-import com.likelion.oegaein.repository.MessageRepository;
-import com.likelion.oegaein.repository.RedisRepository;
+import com.likelion.oegaein.dto.chat.FindMessageData;
+import com.likelion.oegaein.dto.chat.FindMessagesResponse;
+import com.likelion.oegaein.dto.chat.MessageRequestData;
+import com.likelion.oegaein.dto.chat.MessageResponse;
+import com.likelion.oegaein.domain.chat.Message;
+import com.likelion.oegaein.domain.chat.MessageStatus;
+import com.likelion.oegaein.repository.chat.MessageRepository;
+import com.likelion.oegaein.repository.chat.RedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,14 +26,14 @@ public class ChatService {
     private final MessageRepository messageRepository;
     private final RedisRepository redisRepository;
     // constant
-    private final String CHAT_JOIN_MSG = "님이 입장하였습니다.";
+    private final String CHAT_LEAVE_MSG = "님이 퇴장하였습니다.";
     private final String NOT_FOUND_ERR_MSG = "Not Found: ";
     private final int MAX_CACHE_SIZE_EACH_ROOM = 3;
 
     // save chatting content
     public MessageResponse saveMessage(MessageRequestData dto){
-        if(dto.getMessageStatus().equals(MessageStatus.JOIN)){ // JOIN 메시지 변환
-            dto.setMessage(dto.getSenderName() + CHAT_JOIN_MSG);
+        if(dto.getMessageStatus().equals(MessageStatus.LEAVE)){ // LEAVE 메시지 변환
+            dto.setMessage(dto.getSenderName() + CHAT_LEAVE_MSG);
         }
         Message message = Message.builder()
                 .roomId(dto.getRoomId())

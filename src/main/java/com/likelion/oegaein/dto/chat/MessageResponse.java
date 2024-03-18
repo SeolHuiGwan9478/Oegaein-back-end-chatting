@@ -1,7 +1,8 @@
-package com.likelion.oegaein.dto;
+package com.likelion.oegaein.dto.chat;
 
-import com.likelion.oegaein.domain.Message;
-import com.likelion.oegaein.domain.MessageStatus;
+import com.likelion.oegaein.domain.chat.Message;
+import com.likelion.oegaein.domain.chat.MessageStatus;
+import com.likelion.oegaein.dto.global.ResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class MessageResponse implements ResponseDto{
+public class MessageResponse implements ResponseDto {
     private String roomId; // 채팅방 ID
     private String senderName; // 보낸 회원 이름
     private String message; // 메시지 내용

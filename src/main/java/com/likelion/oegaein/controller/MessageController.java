@@ -1,7 +1,11 @@
 package com.likelion.oegaein.controller;
 
+import com.likelion.oegaein.dto.chat.FindMessagesResponse;
+import com.likelion.oegaein.dto.chat.MessageRequest;
+import com.likelion.oegaein.dto.chat.MessageRequestData;
+import com.likelion.oegaein.dto.chat.MessageResponse;
+import com.likelion.oegaein.dto.global.ResponseDto;
 import com.likelion.oegaein.service.ChatService;
-import com.likelion.oegaein.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,7 +34,7 @@ public class MessageController {
         simpMessageSendingOperations.convertAndSend(CHAT_SUB_PATH + message.getRoomId(), responseMessage);
     }
 
-    @GetMapping("/api/v1/messages/{roomId}")
+    @GetMapping("/api/v1/onetoone-chatrooms/{roomId}") // 메세지 내용 전체 조회
     public ResponseEntity<ResponseDto> getMessage(@PathVariable("roomId") String roomId){
         try {
             log.info("Request to get messages");

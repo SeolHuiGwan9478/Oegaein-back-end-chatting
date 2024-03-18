@@ -1,4 +1,4 @@
-package com.likelion.oegaein.domain;
+package com.likelion.oegaein.domain.chat;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -6,7 +6,6 @@ import lombok.Getter;
 
 @Getter
 public enum MessageStatus {
-    JOIN("JOIN"),
     MESSAGE("MESSAGE"),
     LEAVE("LEAVE");
 

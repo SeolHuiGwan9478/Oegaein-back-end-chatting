@@ -1,7 +1,7 @@
-package com.likelion.oegaein.dto;
+package com.likelion.oegaein.dto.chat;
 
-import com.likelion.oegaein.domain.Message;
-import com.likelion.oegaein.domain.MessageStatus;
+import com.likelion.oegaein.domain.chat.Message;
+import com.likelion.oegaein.domain.chat.MessageStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
