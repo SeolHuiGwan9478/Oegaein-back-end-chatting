@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public class Member {
     @Id @GeneratedValue
-    @Column(name = "member_id")
     private Long id;
     @Column(unique = true)
     private String email;
@@ -30,7 +29,7 @@ public class Member {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "profile_id", referencedColumnName = "profile_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id")
     private Profile profile;
 }

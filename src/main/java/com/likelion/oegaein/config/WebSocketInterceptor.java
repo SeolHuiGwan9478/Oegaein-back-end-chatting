@@ -1,5 +1,6 @@
 package com.likelion.oegaein.config;
 
+import com.likelion.oegaein.dto.chat.UpdateDisconnectedAtRequest;
 import com.likelion.oegaein.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +11,12 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Configuration
 @Slf4j
@@ -23,23 +28,27 @@ public class WebSocketInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
         handleMessage(accessor);
-        return ChannelInterceptor.super.preSend(message, channel);
+        return message;
     }
 
     private void handleMessage(StompHeaderAccessor accessor) {
-        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-            String name = accessor.getFirstNativeHeader("name");
-            String roomId = accessor.getFirstNativeHeader("roomId");
+        if (StompCommand.CONNECT.equals(accessor.getCommand())) { // command == CONNECT
             Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
-            sessionAttributes.put("name", name);
-            sessionAttributes.put("roomId", roomId);
+            sessionAttributes.put("name", accessor.getFirstNativeHeader("name"));
+            sessionAttributes.put("roomId", accessor.getFirstNativeHeader("roomId"));
             accessor.setSessionAttributes(sessionAttributes);
-        } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+        } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) { // command == DISCONNECT
             Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
             String name = (String) sessionAttributes.get("name");
             String roomId = (String) sessionAttributes.get("roomId");
+            UpdateDisconnectedAtRequest dto = UpdateDisconnectedAtRequest.builder()
+                    .name(name)
+                    .roomId(roomId)
+                    .build();
             System.out.println(name);
             System.out.println(roomId);
+            // record disconnectedAt
+            chatRoomService.updateDisconnectedAt(dto);
         }
     }
 }

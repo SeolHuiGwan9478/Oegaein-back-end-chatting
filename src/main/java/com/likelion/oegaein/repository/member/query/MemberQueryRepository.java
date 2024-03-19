@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,5 +26,15 @@ public class MemberQueryRepository {
             throw new OneToOneChatException(NOT_FOUND_ONE_TO_ONE_CHAT_MEMBERS_ERR_MSG);
         }
         return findOneToOneChatMembers;
+    }
+
+    public Optional<Member> findByName(String name){
+        String jpql = "select m from Member m" +
+                " join fetch m.profile mp" +
+                " where mp.name = :name";
+        return Optional.ofNullable(em.createQuery(jpql, Member.class)
+                .setParameter("name", name)
+                .getSingleResult()
+        );
     }
 }

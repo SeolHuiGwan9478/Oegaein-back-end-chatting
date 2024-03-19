@@ -1,6 +1,7 @@
 package com.likelion.oegaein.domain.chat;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -19,15 +20,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatRoom {
-    @Id
+    @Id @GeneratedValue
+    private Long id;
     private String chatRoomId; // 채팅방 ID
     private String chatRoomName; // 채팅방 이름
     private Long memberCount; // 채팅방 인원
-    @OneToMany(orphanRemoval = true)
-    @Builder.Default
-    private List<ChatRoomMember> memberList = new ArrayList<>(); // 참가자 목록
     @CreationTimestamp
     private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "chatRoom")
+    @Builder.Default
+    private List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
 
     public void upMemberCount(){
         this.memberCount++;

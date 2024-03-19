@@ -6,6 +6,7 @@ import com.likelion.oegaein.domain.member.Member;
 import com.likelion.oegaein.dto.chat.*;
 import com.likelion.oegaein.repository.chat.ChatRoomMemberRepository;
 import com.likelion.oegaein.repository.chat.ChatRoomRepository;
+import com.likelion.oegaein.repository.chat.query.ChatRoomMemberQueryRepository;
 import com.likelion.oegaein.repository.member.MemberRepository;
 import com.likelion.oegaein.repository.member.query.MemberQueryRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +25,7 @@ import java.util.UUID;
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final ChatRoomMemberQueryRepository chatRoomMemberQueryRepository;
     private final MemberQueryRepository memberQueryRepository;
     private final MemberRepository memberRepository;
 
@@ -86,7 +90,7 @@ public class ChatRoomService {
         Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
                 .orElseThrow(() -> new EntityNotFoundException("Not Found: member"));
         // find ChatRoom
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+        ChatRoom chatRoom = chatRoomRepository.findByChatRoomId(roomId)
                 .orElseThrow(() -> new EntityNotFoundException("Not Found: chatRoom"));
         // find ChatRoomMember
         ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByChatRoomAndMember(chatRoom, authenticatedMember)
@@ -100,7 +104,12 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public void updateDisconnectedAt(){
-
+    public void updateDisconnectedAt(UpdateDisconnectedAtRequest dto){
+        // find ChatRoomMember
+        ChatRoomMember chatRoomMember = chatRoomMemberQueryRepository.findByRoomIdAndName(
+                dto.getRoomId(), dto.getName()
+        ).orElseThrow(() -> new EntityNotFoundException("Not Found: chatRoomMember"));
+        // update disconnectedAt
+        chatRoomMember.updateDisconnectedAt(LocalDateTime.now());
     }
 }
