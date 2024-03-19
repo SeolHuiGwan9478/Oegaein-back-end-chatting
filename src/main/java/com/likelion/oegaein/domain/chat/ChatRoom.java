@@ -22,8 +22,8 @@ import java.util.List;
 public class ChatRoom {
     @Id @GeneratedValue
     private Long id;
-    private String chatRoomId; // 채팅방 ID
-    private String chatRoomName; // 채팅방 이름
+    private String roomId; // 채팅방 ID
+    private String roomName; // 채팅방 이름
     private Long memberCount; // 채팅방 인원
     @CreationTimestamp
     private LocalDateTime createdAt;

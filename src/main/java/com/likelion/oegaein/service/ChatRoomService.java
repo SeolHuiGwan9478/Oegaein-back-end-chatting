@@ -2,10 +2,12 @@ package com.likelion.oegaein.service;
 
 import com.likelion.oegaein.domain.chat.ChatRoom;
 import com.likelion.oegaein.domain.chat.ChatRoomMember;
+import com.likelion.oegaein.domain.chat.Message;
 import com.likelion.oegaein.domain.member.Member;
 import com.likelion.oegaein.dto.chat.*;
 import com.likelion.oegaein.repository.chat.ChatRoomMemberRepository;
 import com.likelion.oegaein.repository.chat.ChatRoomRepository;
+import com.likelion.oegaein.repository.chat.MessageRepository;
 import com.likelion.oegaein.repository.chat.query.ChatRoomMemberQueryRepository;
 import com.likelion.oegaein.repository.member.MemberRepository;
 import com.likelion.oegaein.repository.member.query.MemberQueryRepository;
@@ -26,6 +28,7 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ChatRoomMemberQueryRepository chatRoomMemberQueryRepository;
+    private final MessageRepository messageRepository;
     private final MemberQueryRepository memberQueryRepository;
     private final MemberRepository memberRepository;
 
@@ -34,22 +37,26 @@ public class ChatRoomService {
 
     public FindChatRoomsResponse findChatRooms(){
         // find login user
-        Long authenticatedMemberId = 1L; // 임시 인증 유저 ID
+        Long authenticatedMemberId = 2L; // 임시 인증 유저 ID
         Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
                 .orElseThrow(() -> new EntityNotFoundException("Not Found: member")); // 에러 메시지 국제화 필요
         // find ChatRoomMembers
         List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByMember(authenticatedMember);
-        // get ChatRoom
-        List<ChatRoom> chatRooms = chatRoomMembers.stream()
-                .map(ChatRoomMember::getChatRoom).toList();
         // create FindChatRoomsData
-        List<FindChatRoomsData> findChatRoomsDatas = chatRooms.stream()
-                .map((chatRoom) -> {
-                   FindChatRoomsData findChatRoomsData = FindChatRoomsData.builder()
-                           .chatRoomName(chatRoom.getChatRoomName())
-                           .memberCount(chatRoom.getMemberCount())
-                           .build();
-                   return findChatRoomsData;
+        List<FindChatRoomsData> findChatRoomsDatas = chatRoomMembers.stream()
+                .map((chatRoomMember) -> {
+                    ChatRoom chatRoom = chatRoomMember.getChatRoom();
+                    String roomId = chatRoom.getRoomId();
+                    String roomName = chatRoom.getRoomName();
+                    Long memberCount = chatRoom.getMemberCount();
+                    LocalDateTime disconnectedAt = chatRoomMember.getDisconnectedAt();
+                    List<Message> unReadMessages = messageRepository.findByRoomIdAndDateAfter(roomId, disconnectedAt);
+                    FindChatRoomsData findChatRoomsData = FindChatRoomsData.builder()
+                            .roomName(roomName)
+                            .memberCount(memberCount)
+                            .unReadMessageCount(unReadMessages.size())
+                            .build();
+                    return findChatRoomsData;
                 }).toList();
         return new FindChatRoomsResponse(findChatRoomsDatas.size(), findChatRoomsDatas);
     }
@@ -67,8 +74,8 @@ public class ChatRoomService {
         // create chat room
         String chatRoomName = opponentMember.getProfile().getName();
         ChatRoom chatRoom = ChatRoom.builder()
-                .chatRoomId(UUID.randomUUID().toString())
-                .chatRoomName(chatRoomName)
+                .roomId(UUID.randomUUID().toString())
+                .roomName(chatRoomName)
                 .memberCount(ONE_TO_ONE_CHAT_ROOM_MEMBER_COUNT)
                 .build();
         chatRoomRepository.save(chatRoom);
@@ -77,10 +84,11 @@ public class ChatRoomService {
             ChatRoomMember chatRoomMember = ChatRoomMember.builder()
                     .member(chatMember)
                     .chatRoom(chatRoom)
+                    .disconnectedAt(LocalDateTime.now())
                     .build();
             chatRoomMemberRepository.save(chatRoomMember);
         });
-        return new CreateOneToOneChatRoomResponse(chatRoom.getChatRoomId());
+        return new CreateOneToOneChatRoomResponse(chatRoom.getRoomId());
     }
 
     @Transactional
@@ -90,7 +98,7 @@ public class ChatRoomService {
         Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
                 .orElseThrow(() -> new EntityNotFoundException("Not Found: member"));
         // find ChatRoom
-        ChatRoom chatRoom = chatRoomRepository.findByChatRoomId(roomId)
+        ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
                 .orElseThrow(() -> new EntityNotFoundException("Not Found: chatRoom"));
         // find ChatRoomMember
         ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByChatRoomAndMember(chatRoom, authenticatedMember)

@@ -2,10 +2,7 @@ package com.likelion.oegaein.controller;
 
 import com.likelion.oegaein.domain.chat.ChatRoomMember;
 import com.likelion.oegaein.domain.member.Member;
-import com.likelion.oegaein.dto.chat.CreateOneToOneChatRoomData;
-import com.likelion.oegaein.dto.chat.CreateOneToOneChatRoomRequest;
-import com.likelion.oegaein.dto.chat.CreateOneToOneChatRoomResponse;
-import com.likelion.oegaein.dto.chat.DeleteOneToOneChatRoomResponse;
+import com.likelion.oegaein.dto.chat.*;
 import com.likelion.oegaein.dto.global.ResponseDto;
 import com.likelion.oegaein.repository.chat.ChatRoomMemberRepository;
 import com.likelion.oegaein.repository.member.MemberRepository;
@@ -29,7 +26,8 @@ public class ChatRoomController {
     @GetMapping("/api/v1/chatrooms") // 참가중인 채팅 목록 조회
     public ResponseEntity<ResponseDto> getChatRooms(){
         log.info("Request to get chatrooms");
-        return new ResponseEntity<>(HttpStatus.OK);
+        FindChatRoomsResponse response = chatRoomService.findChatRooms();
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     @PostMapping("/api/v1/onetoone-chatrooms") // 채팅방 생성
@@ -43,21 +41,5 @@ public class ChatRoomController {
         log.info("Request to delete chatroom-{}", roomId);
         DeleteOneToOneChatRoomResponse response = chatRoomService.removeOneToOneChatRoom(roomId);
         return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
-    }
-
-    @PostMapping("/user")
-    @Transactional
-    public ResponseEntity<ResponseDto> tempcreateuser(){
-        log.info("user test");
-        Member member = new Member();
-        memberRepository.save(member);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @GetMapping("/chatroommembers")
-    public ResponseEntity<ResponseDto> getchatrooms(){
-        log.info("chatrooms test");
-        List<ChatRoomMember> chatRoomMemberList = chatRoomMemberRepository.findAll();
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

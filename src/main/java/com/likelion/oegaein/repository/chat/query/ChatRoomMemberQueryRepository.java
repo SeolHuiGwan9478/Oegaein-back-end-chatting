@@ -17,7 +17,7 @@ public class ChatRoomMemberQueryRepository {
                 " join fetch crm.chatRoom crmcr" +
                 " join fetch crm.member crmm" +
                 " join fetch crmm.profile crmmp" +
-                " where crmcr.chatRoomId = :roomId" +
+                " where crmcr.roomId = :roomId" +
                 " and crmmp.name = :name";
         try {
             return Optional.ofNullable(em.createQuery(jpql, ChatRoomMember.class)
