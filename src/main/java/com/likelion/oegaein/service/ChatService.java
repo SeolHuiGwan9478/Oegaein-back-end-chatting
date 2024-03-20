@@ -1,105 +1,142 @@
 package com.likelion.oegaein.service;
 
-import com.likelion.oegaein.dto.chat.FindMessageData;
-import com.likelion.oegaein.dto.chat.FindMessagesResponse;
-import com.likelion.oegaein.dto.chat.MessageRequestData;
-import com.likelion.oegaein.dto.chat.MessageResponse;
+import com.likelion.oegaein.domain.chat.ChatRoom;
+import com.likelion.oegaein.domain.chat.ChatRoomMember;
 import com.likelion.oegaein.domain.chat.Message;
-import com.likelion.oegaein.domain.chat.MessageStatus;
+import com.likelion.oegaein.domain.member.Member;
+import com.likelion.oegaein.dto.chat.*;
+import com.likelion.oegaein.repository.chat.ChatRoomMemberRepository;
+import com.likelion.oegaein.repository.chat.ChatRoomRepository;
 import com.likelion.oegaein.repository.chat.MessageRepository;
-import com.likelion.oegaein.repository.chat.RedisRepository;
+import com.likelion.oegaein.repository.chat.query.ChatRoomMemberQueryRepository;
+import com.likelion.oegaein.repository.member.MemberRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ChatService {
-    // DI
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final ChatRoomMemberQueryRepository chatRoomMemberQueryRepository;
     private final MessageRepository messageRepository;
-    private final RedisRepository redisRepository;
-    // constant
-    private final String CHAT_LEAVE_MSG = "님이 퇴장하였습니다.";
-    private final String NOT_FOUND_ERR_MSG = "Not Found: ";
-    private final int MAX_CACHE_SIZE_EACH_ROOM = 3;
+    private final MemberRepository memberRepository;
 
-    // save chatting content
-    public MessageResponse saveMessage(MessageRequestData dto){
-        if(dto.getMessageStatus().equals(MessageStatus.LEAVE)){ // LEAVE 메시지 변환
-            dto.setMessage(dto.getSenderName() + CHAT_LEAVE_MSG);
-        }
-        Message message = Message.builder()
-                .roomId(dto.getRoomId())
-                .senderName(dto.getSenderName())
-                .message(dto.getMessage())
-                .messageStatus(dto.getMessageStatus())
-                .date(LocalDateTime.now())
-                .build(); // setting message
-        // check in redis cache
-        if(!redisRepository.containsKey(dto.getRoomId())){
-            Queue<Message> q = new LinkedList<>();
-            q.add(message);
-            redisRepository.put(dto.getRoomId(), q);
-        }else{
-            Queue<Message> q = redisRepository.get(dto.getRoomId());
-            q.add(message);
-            if(q.size() >= MAX_CACHE_SIZE_EACH_ROOM){
-                Queue<Message> tmpQ = new LinkedList<>();
-                for(int i = 0;i < MAX_CACHE_SIZE_EACH_ROOM;i++){
-                    tmpQ.add(q.poll());
-                }
-                commitMessageCache(tmpQ);
-            }
-            redisRepository.put(dto.getRoomId(), q);
-        }
-        return new MessageResponse(message);
+    private final MessageService messageService;
+
+    private final String CHAT_ROOM_NAME_POSTFIX = " 행성방";
+
+    public FindChatRoomsResponse findChatRooms(){
+        // find login user
+        Long authenticatedMemberId = 2L; // 임시 인증 유저 ID
+        Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
+                .orElseThrow(() -> new EntityNotFoundException("Not Found: member")); // 에러 메시지 국제화 필요
+        // find ChatRoomMembers
+        List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByMember(authenticatedMember);
+        // create FindChatRoomsData
+        List<FindChatRoomsData> findChatRoomsDatas = chatRoomMembers.stream()
+                .map((chatRoomMember) -> {
+                    // local var
+                    ChatRoom chatRoom = chatRoomMember.getChatRoom();
+                    String roomId = chatRoom.getRoomId();
+                    String roomName = chatRoom.getRoomName();
+                    int memberCount = chatRoom.getMemberCount();
+                    LocalDateTime disconnectedAt = chatRoomMember.getDisconnectedAt();
+                    // find unread messages
+                    List<Message> unReadMessages = messageRepository.findByRoomIdAndDateAfterOrderByDateAsc(roomId, disconnectedAt);
+                    // find all of messages
+                    FindMessagesResponse response = messageService.getMessages(roomId);
+                    List<FindMessageData> allOfMessages = response.getData();
+
+                    if(allOfMessages.isEmpty()){
+                        return FindChatRoomsData.builder()
+                                .roomName(roomName)
+                                .memberCount(memberCount)
+                                .unReadMessageCount(unReadMessages.size())
+                                .build();
+                    }
+                    FindMessageData lastMessage = allOfMessages.get(allOfMessages.size()-1);
+                    // create response
+                    return FindChatRoomsData.builder()
+                            .roomName(roomName)
+                            .memberCount(memberCount)
+                            .unReadMessageCount(unReadMessages.size())
+                            .lastMessageContent(lastMessage.getMessage())
+                            .lastMessageDate(lastMessage.getDate())
+                            .build();
+                }).toList();
+        return new FindChatRoomsResponse(findChatRoomsDatas.size(), findChatRoomsDatas);
     }
 
-    // get message list
-    public FindMessagesResponse getMessages(String roomId){
-        List<Message> messages; // messages
-        // look aside pattern
-        if(!redisRepository.containsKey(roomId) || redisRepository.get(roomId).isEmpty()){ // cache miss
-            List<Message> findMessages = getMessagesInDb(roomId);
-            if(findMessages.isEmpty()){ // no data in db
-                throw new IllegalArgumentException(NOT_FOUND_ERR_MSG + roomId);
-            }
-            // data in db
-            Queue<Message> q = new LinkedList<>(findMessages);
-            redisRepository.put(roomId, q);
-            messages = findMessages;
-        }else{ // cache hit
-            messages = getMessagesInCache(roomId);
+    @Transactional
+    public CreateChatRoomResponse createChatRoom(CreateChatRoomData dto){
+        // find chat members
+        Long authenticatedMemberId = 1L; // 임시 인증 유저 ID
+        List<Long> opponentMemberIds = dto.getOpponentMemberIds(); // 상대방 IDs
+        Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
+                .orElseThrow(() -> new EntityNotFoundException("Not Found: member")); // 에러 메시지 국제화 필요
+        List<Member> opponentMembers = opponentMemberIds.stream()
+                .map((opponentMemberId) -> memberRepository.findById(opponentMemberId)
+                        .orElseThrow(() -> new EntityNotFoundException("Not Found: member"))).toList();
+        List<Member> chatMembers = new ArrayList<>();
+        chatMembers.add(authenticatedMember);
+        chatMembers.addAll(opponentMembers);
+
+        // create chat room
+        String chatRoomName = dto.getMatchingPostTitle() + CHAT_ROOM_NAME_POSTFIX;
+        ChatRoom chatRoom = ChatRoom.builder()
+                .roomId(UUID.randomUUID().toString())
+                .roomName(chatRoomName)
+                .memberCount(chatMembers.size())
+                .build();
+        chatRoomRepository.save(chatRoom);
+        // create chat room member
+        chatMembers.forEach((chatMember) -> {
+            ChatRoomMember chatRoomMember = ChatRoomMember.builder()
+                    .member(chatMember)
+                    .chatRoom(chatRoom)
+                    .disconnectedAt(LocalDateTime.now())
+                    .build();
+            chatRoomMemberRepository.save(chatRoomMember);
+        });
+        return new CreateChatRoomResponse(chatRoom.getRoomId());
+    }
+
+    @Transactional
+    public DeleteChatRoomResponse removeOneToOneChatRoom(String roomId){
+        // find chat member
+        Long authenticatedMemberId = 1L;
+        Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
+                .orElseThrow(() -> new EntityNotFoundException("Not Found: member"));
+        // find ChatRoom
+        ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("Not Found: chatRoom"));
+        // find ChatRoomMember
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByChatRoomAndMember(chatRoom, authenticatedMember)
+                        .orElseThrow(() -> new EntityNotFoundException("Not Found: chatRoomMember"));
+        chatRoomMemberRepository.delete(chatRoomMember);
+        chatRoom.downMemberCount();
+        if(chatRoom.getMemberCount() == 0){ // 모두 방에서 나갔는지 확인
+            chatRoomRepository.delete(chatRoom);
         }
-        // to FindMessageData
-        List<FindMessageData> dto = messages.stream().map(FindMessageData::toFindMessageData).toList();
-        return new FindMessagesResponse(dto);
+        return new DeleteChatRoomResponse(roomId, authenticatedMemberId);
     }
 
-    // write back pattern
-    private void commitMessageCache(Queue<Message> messageQueue){
-        for(int i = 0;i < MAX_CACHE_SIZE_EACH_ROOM;i++){
-            Message message = messageQueue.poll();
-            messageRepository.save(message);
-        }
-    }
-
-    // get messages in mongoDB
-    private List<Message> getMessagesInDb(String roomId){
-        Pageable pageable = PageRequest.of(0, 50);
-        Page<Message> messages = messageRepository.findByRoomIdOrderByDateDesc(roomId, pageable);
-        return messages.getContent();
-    }
-
-    // get messages in redis
-    private List<Message> getMessagesInCache(String roomId){
-        return redisRepository.get(roomId).stream().toList();
+    @Transactional
+    public void updateDisconnectedAt(UpdateDisconnectedAtRequest dto){
+        // find ChatRoomMember
+        ChatRoomMember chatRoomMember = chatRoomMemberQueryRepository.findByRoomIdAndName(
+                dto.getRoomId(), dto.getName()
+        ).orElseThrow(() -> new EntityNotFoundException("Not Found: chatRoomMember"));
+        // update disconnectedAt
+        chatRoomMember.updateDisconnectedAt(LocalDateTime.now());
     }
 }

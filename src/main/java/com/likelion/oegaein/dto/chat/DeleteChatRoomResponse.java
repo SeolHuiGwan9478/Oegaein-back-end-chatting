@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class DeleteOneToOneChatRoomResponse implements ResponseDto {
+public class DeleteChatRoomResponse implements ResponseDto {
     private String roomId;
     private Long memberId;
 }

@@ -24,7 +24,7 @@ public class ChatRoom {
     private Long id;
     private String roomId; // 채팅방 ID
     private String roomName; // 채팅방 이름
-    private Long memberCount; // 채팅방 인원
+    private int memberCount; // 채팅방 인원
     @CreationTimestamp
     private LocalDateTime createdAt;
     @OneToMany(mappedBy = "chatRoom")

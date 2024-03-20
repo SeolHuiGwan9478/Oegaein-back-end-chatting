@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface MessageRepository extends MongoRepository<Message, String> {
     List<Message> findByRoomId(String roomId);
-    List<Message> findByRoomIdAndDateAfter(String roomId, LocalDateTime date);
-    Page<Message> findByRoomIdOrderByDateDesc(String roomId, Pageable pageable);
+    List<Message> findByRoomIdAndDateAfterOrderByDateAsc(String roomId, LocalDateTime date);
+    Page<Message> findByRoomIdOrderByDateAsc(String roomId, Pageable pageable);
 }

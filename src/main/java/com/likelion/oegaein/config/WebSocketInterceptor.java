@@ -1,7 +1,7 @@
 package com.likelion.oegaein.config;
 
 import com.likelion.oegaein.dto.chat.UpdateDisconnectedAtRequest;
-import com.likelion.oegaein.service.ChatRoomService;
+import com.likelion.oegaein.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -11,18 +11,13 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
 public class WebSocketInterceptor implements ChannelInterceptor {
-    private final ChatRoomService chatRoomService;
+    private final ChatService chatRoomService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {

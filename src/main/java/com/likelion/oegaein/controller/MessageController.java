@@ -5,7 +5,7 @@ import com.likelion.oegaein.dto.chat.MessageRequest;
 import com.likelion.oegaein.dto.chat.MessageRequestData;
 import com.likelion.oegaein.dto.chat.MessageResponse;
 import com.likelion.oegaein.dto.global.ResponseDto;
-import com.likelion.oegaein.service.ChatService;
+import com.likelion.oegaein.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MessageController {
     // DI
     private final SimpMessageSendingOperations simpMessageSendingOperations;
-    private final ChatService chatService;
+    private final MessageService chatService;
     // constant
     private final String CHAT_SUB_PATH = "/topic/";
 

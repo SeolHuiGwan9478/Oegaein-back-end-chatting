@@ -1,28 +1,20 @@
 package com.likelion.oegaein.controller;
 
-import com.likelion.oegaein.domain.chat.ChatRoomMember;
-import com.likelion.oegaein.domain.member.Member;
 import com.likelion.oegaein.dto.chat.*;
 import com.likelion.oegaein.dto.global.ResponseDto;
-import com.likelion.oegaein.repository.chat.ChatRoomMemberRepository;
-import com.likelion.oegaein.repository.member.MemberRepository;
-import com.likelion.oegaein.service.ChatRoomService;
+import com.likelion.oegaein.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
 public class ChatRoomController {
-    private final ChatRoomService chatRoomService;
-    private final ChatRoomMemberRepository chatRoomMemberRepository;
-    private final MemberRepository memberRepository;
+    private final ChatService chatRoomService;
+
     @GetMapping("/api/v1/chatrooms") // 참가중인 채팅 목록 조회
     public ResponseEntity<ResponseDto> getChatRooms(){
         log.info("Request to get chatrooms");
@@ -30,16 +22,16 @@ public class ChatRoomController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
-    @PostMapping("/api/v1/onetoone-chatrooms") // 채팅방 생성
-    public ResponseEntity<ResponseDto> postChatRoom(@RequestBody CreateOneToOneChatRoomRequest dto){
+    @PostMapping("/api/v1/chatrooms") // 채팅방 생성
+    public ResponseEntity<ResponseDto> postChatRoom(@RequestBody CreateChatRoomRequest dto){
         log.info("Request to post chatroom");
-        CreateOneToOneChatRoomResponse response = chatRoomService.createOneToOneChatRoom(CreateOneToOneChatRoomData.toCreateChatRoomData(dto));
+        CreateChatRoomResponse response = chatRoomService.createChatRoom(CreateChatRoomData.toCreateChatRoomData(dto));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    @DeleteMapping("/api/v1/onetoone-chatrooms/{roomid}") // 특정 채팅방 나가기
+    @DeleteMapping("/api/v1/chatrooms/{roomid}") // 특정 채팅방 나가기
     public ResponseEntity<ResponseDto> deleteChatRoom(@PathVariable("roomid") String roomId){
         log.info("Request to delete chatroom-{}", roomId);
-        DeleteOneToOneChatRoomResponse response = chatRoomService.removeOneToOneChatRoom(roomId);
+        DeleteChatRoomResponse response = chatRoomService.removeOneToOneChatRoom(roomId);
         return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
     }
 }

@@ -6,6 +6,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CreateOneToOneChatRoomResponse implements ResponseDto {
+public class CreateChatRoomResponse implements ResponseDto {
     private String roomId;
 }
