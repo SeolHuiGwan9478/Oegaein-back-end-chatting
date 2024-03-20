@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,13 +29,13 @@ public class MessageController {
     private final String CHAT_SUB_PATH = "/topic/";
 
     @MessageMapping("/message")
-    private void sendMessage(@Payload MessageRequest message){
+    private void sendMessage(@Payload MessageRequest message, StompHeaderAccessor accessor){
         log.info("Request to send message");
-        MessageResponse responseMessage = chatService.saveMessage(MessageRequestData.toMessageRequestData(message));
-        simpMessageSendingOperations.convertAndSend(CHAT_SUB_PATH + message.getRoomId(), responseMessage);
+        MessageResponse responseMessage = chatService.saveMessage(MessageRequestData.toMessageRequestData(message), accessor);
+        simpMessageSendingOperations.convertAndSend(CHAT_SUB_PATH + responseMessage.getRoomId(), responseMessage);
     }
 
-    @GetMapping("/api/v1/onetoone-chatrooms/{roomId}") // 메세지 내용 전체 조회
+    @GetMapping("/api/v1/messages/{roomId}") // 메세지 내용 전체 조회
     public ResponseEntity<ResponseDto> getMessage(@PathVariable("roomId") String roomId){
         try {
             log.info("Request to get messages");

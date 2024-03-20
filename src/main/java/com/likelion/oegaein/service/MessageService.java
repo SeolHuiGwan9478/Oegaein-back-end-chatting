@@ -1,23 +1,28 @@
 package com.likelion.oegaein.service;
 
+import com.likelion.oegaein.domain.chat.ChatRoom;
+import com.likelion.oegaein.domain.chat.ChatRoomMember;
 import com.likelion.oegaein.dto.chat.FindMessageData;
 import com.likelion.oegaein.dto.chat.FindMessagesResponse;
 import com.likelion.oegaein.dto.chat.MessageRequestData;
 import com.likelion.oegaein.dto.chat.MessageResponse;
 import com.likelion.oegaein.domain.chat.Message;
 import com.likelion.oegaein.domain.chat.MessageStatus;
+import com.likelion.oegaein.exception.MessageException;
+import com.likelion.oegaein.repository.chat.ChatRoomMemberRepository;
 import com.likelion.oegaein.repository.chat.MessageRepository;
 import com.likelion.oegaein.repository.chat.RedisRepository;
+import com.likelion.oegaein.repository.chat.query.ChatRoomMemberQueryRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,30 +30,40 @@ public class MessageService {
     // DI
     private final MessageRepository messageRepository;
     private final RedisRepository redisRepository;
+    private final ChatRoomMemberQueryRepository chatRoomMemberQueryRepository;
     // constant
     private final String CHAT_LEAVE_MSG = "님이 퇴장하였습니다.";
     private final String NOT_FOUND_ERR_MSG = "Not Found: ";
     private final int MAX_CACHE_SIZE_EACH_ROOM = 50;
 
     // save chatting content
-    public MessageResponse saveMessage(MessageRequestData dto){
+    public MessageResponse saveMessage(MessageRequestData dto, StompHeaderAccessor accessor){
+        // get headers
+        Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+        if(sessionAttributes == null){
+            throw new MessageException("Not Found: Message Headers");
+        }
+        String senderName = (String) sessionAttributes.get("name");
+        String roomId = (String) sessionAttributes.get("roomId");
+        ChatRoomMember chatRoomMember = chatRoomMemberQueryRepository.findByRoomIdAndName(roomId, senderName)
+                .orElseThrow(() -> new EntityNotFoundException("Not Found: ChatRoomMember"));
         if(dto.getMessageStatus().equals(MessageStatus.LEAVE)){ // LEAVE 메시지 변환
-            dto.setMessage(dto.getSenderName() + CHAT_LEAVE_MSG);
+            dto.setMessage(senderName + CHAT_LEAVE_MSG);
         }
         Message message = Message.builder()
-                .roomId(dto.getRoomId())
-                .senderName(dto.getSenderName())
+                .roomId(roomId)
+                .senderName(senderName)
                 .message(dto.getMessage())
                 .messageStatus(dto.getMessageStatus())
                 .date(LocalDateTime.now())
                 .build(); // setting message
         // check in redis cache
-        if(!redisRepository.containsKey(dto.getRoomId())){
+        if(!redisRepository.containsKey(roomId)){
             Queue<Message> q = new LinkedList<>();
             q.add(message);
-            redisRepository.put(dto.getRoomId(), q);
+            redisRepository.put(roomId, q);
         }else{
-            Queue<Message> q = redisRepository.get(dto.getRoomId());
+            Queue<Message> q = redisRepository.get(roomId);
             q.add(message);
             if(q.size() >= MAX_CACHE_SIZE_EACH_ROOM){
                 Queue<Message> tmpQ = new LinkedList<>();
@@ -57,7 +72,7 @@ public class MessageService {
                 }
                 commitMessageCache(tmpQ);
             }
-            redisRepository.put(dto.getRoomId(), q);
+            redisRepository.put(roomId, q);
         }
         return new MessageResponse(message);
     }

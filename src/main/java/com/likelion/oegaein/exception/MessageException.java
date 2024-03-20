@@ -1,12 +1,12 @@
 package com.likelion.oegaein.exception;
 
-public class OneToOneChatException extends RuntimeException{
+public class MessageException extends RuntimeException{
     @Override
     public String getMessage() {
         return super.getMessage();
     }
 
-    public OneToOneChatException(String message) {
+    public MessageException(String message) {
         super(message);
     }
 }
