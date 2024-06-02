@@ -1,9 +1,9 @@
 package com.likelion.oegaein.redis;
 
-import com.likelion.oegaein.domain.chat.Message;
-import com.likelion.oegaein.domain.chat.MessageStatus;
-import com.likelion.oegaein.repository.chat.MessageRepository;
-import com.likelion.oegaein.repository.chat.RedisRepository;
+import com.likelion.oegaein.domain.chat.entity.Message;
+import com.likelion.oegaein.domain.chat.entity.MessageStatus;
+import com.likelion.oegaein.domain.chat.repository.MessageRepository;
+import com.likelion.oegaein.domain.chat.repository.RedisRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
