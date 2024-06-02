@@ -20,11 +20,11 @@ public class ChatRoomMemberQueryRepository {
                 " where crmcr.roomId = :roomId" +
                 " and crmmp.name = :name";
         try {
-            return Optional.ofNullable(em.createQuery(jpql, ChatRoomMember.class)
+            return Optional.of(em.createQuery(jpql, ChatRoomMember.class)
                     .setParameter("roomId", roomId)
                     .setParameter("name", name).getSingleResult());
         }catch (Exception e){
-            throw new ChatMemberException("Chat Member Error");
+            return Optional.empty();
         }
     }
 }

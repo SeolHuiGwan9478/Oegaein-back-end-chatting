@@ -1,7 +1,8 @@
 package com.likelion.oegaein.global.config;
 
 import com.likelion.oegaein.domain.chat.dto.UpdateDisconnectedAtRequest;
-import com.likelion.oegaein.domain.chat.service.ChatService;
+import com.likelion.oegaein.domain.chat.service.ChatRoomMemberService;
+import com.likelion.oegaein.domain.chat.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,8 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class WebSocketInterceptor implements ChannelInterceptor {
-    private final ChatService chatRoomService;
+    private final ChatRoomMemberService chatRoomMemberService;
+    private final String INTERCEPTOR_ERR_MSG = "Socket Interceptor Error";
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -41,7 +43,13 @@ public class WebSocketInterceptor implements ChannelInterceptor {
                     .roomId(roomId)
                     .build();
             // record disconnectedAt
-            chatRoomService.updateDisconnectedAt(dto);
+            try {
+                chatRoomMemberService.updateDisconnectedAt(dto);
+            }catch (Exception e){
+                log.error(INTERCEPTOR_ERR_MSG + ": " + e.getMessage());
+            }
+        }else{
+            log.info("Message {}", accessor.getCommand());
         }
     }
 }

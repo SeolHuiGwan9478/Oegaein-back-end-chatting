@@ -31,7 +31,10 @@ public class MessageService {
     private final ChatRoomMemberQueryRepository chatRoomMemberQueryRepository;
     // constant
     private final String CHAT_LEAVE_MSG = "님이 퇴장하였습니다.";
-    private final String NOT_FOUND_ERR_MSG = "Not Found: ";
+    private final String MESSAGE_HEADER_ERR_MSG = "메세지 헤더를 찾을 수 없습니다.";
+    private final String NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG = "찾을 수 없는 채팅방 참가자입니다.";
+    private final String MESSAGE_HEADER_NAME_KEY = "name";
+    private final String MESSAGE_HEADER_ROOM_ID_KEY = "roomId";
     private final int MAX_CACHE_SIZE_EACH_ROOM = 50;
 
     // save chatting content
@@ -39,12 +42,12 @@ public class MessageService {
         // get headers
         Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
         if(sessionAttributes == null){
-            throw new MessageException("Not Found: Message Headers");
+            throw new MessageException(MESSAGE_HEADER_ERR_MSG);
         }
-        String senderName = (String) sessionAttributes.get("name");
-        String roomId = (String) sessionAttributes.get("roomId");
+        String senderName = (String) sessionAttributes.get(MESSAGE_HEADER_NAME_KEY);
+        String roomId = (String) sessionAttributes.get(MESSAGE_HEADER_ROOM_ID_KEY);
         ChatRoomMember chatRoomMember = chatRoomMemberQueryRepository.findByRoomIdAndName(roomId, senderName)
-                .orElseThrow(() -> new EntityNotFoundException("Not Found: ChatRoomMember"));
+                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG));
         if(dto.getMessageStatus().equals(MessageStatus.LEAVE)){ // LEAVE 메시지 변환
             dto.setMessage(senderName + CHAT_LEAVE_MSG);
         }

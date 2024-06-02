@@ -10,7 +10,6 @@ import com.likelion.oegaein.domain.member.entity.member.Member;
 import com.likelion.oegaein.domain.chat.repository.ChatRoomMemberRepository;
 import com.likelion.oegaein.domain.chat.repository.ChatRoomRepository;
 import com.likelion.oegaein.domain.chat.repository.MessageRepository;
-import com.likelion.oegaein.domain.chat.repository.query.ChatRoomMemberQueryRepository;
 import com.likelion.oegaein.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,33 +23,30 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ChatService {
-    // di
+public class ChatRoomService {
+    // DI
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
-    private final ChatRoomMemberQueryRepository chatRoomMemberQueryRepository;
     private final MessageRepository messageRepository;
     private final MemberRepository memberRepository;
     private final MatchingPostRepository matchingPostRepository;
-
     private final MessageService messageService;
-
     // constant
     private final String NOT_FOUND_MEMBER_ERR_MSG = "찾을 수 없는 사용자입니다.";
     private final String NOT_FOUND_MATCHING_POST_ERR_MSG = "찾을 수 없는 매칭글입니다.";
+    private final String NOT_FOUND_CHAT_ROOM_ERR_MSG = "찾을 수 없는 채팅방입니다.";
+    private final String NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG = "찾을 수 없는 채팅방 참가자입니다.";
     private final String CHAT_ROOM_NAME_POSTFIX = " 행성방";
 
-    public FindChatRoomsResponse findChatRooms(){
+    public FindChatRoomsResponse findChatRooms(Long memberId){
         // find login user
-        Long authenticatedMemberId = 2L; // 임시 인증 유저 ID
-        Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
-                .orElseThrow(() -> new EntityNotFoundException("Not Found: member")); // 에러 메시지 국제화 필요
+        Member authenticatedMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
         // find ChatRoomMembers
         List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByMember(authenticatedMember);
         // create FindChatRoomsData
-        List<FindChatRoomsData> findChatRoomsDatas = chatRoomMembers.stream()
+        List<FindChatRoomsData> findChatRoomsData = chatRoomMembers.stream()
                 .map((chatRoomMember) -> {
-                    // local var
                     ChatRoom chatRoom = chatRoomMember.getChatRoom();
                     String roomId = chatRoom.getRoomId();
                     String roomName = chatRoom.getRoomName();
@@ -64,14 +60,17 @@ public class ChatService {
 
                     if(allOfMessages.isEmpty()){
                         return FindChatRoomsData.builder()
+                                .id(chatRoom.getId())
+                                .roomId(roomId)
                                 .roomName(roomName)
                                 .memberCount(memberCount)
-                                .unReadMessageCount(unReadMessages.size())
                                 .build();
                     }
                     FindMessageData lastMessage = allOfMessages.get(allOfMessages.size()-1);
                     // create response
                     return FindChatRoomsData.builder()
+                            .id(chatRoom.getId())
+                            .roomId(roomId)
                             .roomName(roomName)
                             .memberCount(memberCount)
                             .unReadMessageCount(unReadMessages.size())
@@ -79,14 +78,12 @@ public class ChatService {
                             .lastMessageDate(lastMessage.getDate())
                             .build();
                 }).toList();
-        return new FindChatRoomsResponse(findChatRoomsDatas.size(), findChatRoomsDatas);
+        return new FindChatRoomsResponse(findChatRoomsData.size(), findChatRoomsData);
     }
 
     @Transactional
     public CreateChatRoomResponse createChatRoom(CreateChatRoomData dto){
-        // find chat member & matchingPost
-        Member authenticatedMember = memberRepository.findById(dto.getMemberId())
-                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
+        // find matchingPost
         MatchingPost matchingPost = matchingPostRepository.findById(dto.getMatchingPostId())
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MATCHING_POST_ERR_MSG));
         // create chat room
@@ -94,40 +91,30 @@ public class ChatService {
         ChatRoom chatRoom = ChatRoom.builder()
                 .roomId(UUID.randomUUID().toString())
                 .roomName(chatRoomName)
+                .memberCount(0)
                 .matchingPost(matchingPost)
                 .build();
         chatRoomRepository.save(chatRoom);
-        return new CreateChatRoomResponse(chatRoom.getRoomId());
+        return new CreateChatRoomResponse(chatRoom.getId(),chatRoom.getRoomId());
     }
 
     @Transactional
-    public DeleteChatRoomResponse removeOneToOneChatRoom(String roomId){
+    public DeleteChatRoomResponse removeOneToOneChatRoom(String roomId, Long memberId){
         // find chat member
-        Long authenticatedMemberId = 1L;
-        Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
-                .orElseThrow(() -> new EntityNotFoundException("Not Found: member"));
+        Member authenticatedMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
         // find ChatRoom
         ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
-                .orElseThrow(() -> new EntityNotFoundException("Not Found: chatRoom"));
+                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_ERR_MSG));
         // find ChatRoomMember
         ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByChatRoomAndMember(chatRoom, authenticatedMember)
-                        .orElseThrow(() -> new EntityNotFoundException("Not Found: chatRoomMember"));
+                        .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG));
         chatRoomMemberRepository.delete(chatRoomMember);
         chatRoom.downMemberCount();
         if(chatRoom.getMemberCount() == 0){ // 모두 방에서 나갔는지 확인
             chatRoomRepository.delete(chatRoom);
         }
-        return new DeleteChatRoomResponse(roomId, authenticatedMemberId);
-    }
-
-    @Transactional
-    public void updateDisconnectedAt(UpdateDisconnectedAtRequest dto){
-        // find ChatRoomMember
-        ChatRoomMember chatRoomMember = chatRoomMemberQueryRepository.findByRoomIdAndName(
-                dto.getRoomId(), dto.getName()
-        ).orElseThrow(() -> new EntityNotFoundException("Not Found: chatRoomMember"));
-        // update disconnectedAt
-        chatRoomMember.updateDisconnectedAt(LocalDateTime.now());
+        return new DeleteChatRoomResponse(roomId, memberId);
     }
 
     // custom method

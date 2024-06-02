@@ -27,6 +27,8 @@ public class ChatRoom {
 
     private String roomName; // 채팅방 이름
 
+    private int memberCount; // 참가자 수
+
     @OneToOne(fetch = FetchType.LAZY)
     private MatchingPost matchingPost;
 
@@ -36,4 +38,10 @@ public class ChatRoom {
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     @Builder.Default
     private List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
+
+
+    public void downMemberCount() {
+        this.memberCount -= 1;
+    }
+    public void upMemberCount() {this.memberCount += 1;}s
 }

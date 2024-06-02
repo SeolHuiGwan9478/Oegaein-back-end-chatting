@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class FindChatRoomsData {
+    private Long id; // pk
+    private String roomId; // 채팅방 UUID
     private String roomName; // 채팅방 이름
     private int memberCount; // 참여자 수
     private int unReadMessageCount; // 읽지 않은 메세지 수

@@ -15,13 +15,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketInterceptor webSocketInterceptor;
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/oegaein").setAllowedOriginPatterns("*").withSockJS();
+        registry.addEndpoint("/oegaein").setAllowedOriginPatterns("*");//.withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/pub");
         registry.enableStompBrokerRelay("/topic")
+                .setSystemHeartbeatReceiveInterval(300000)
+                .setSystemHeartbeatSendInterval(300000)
                 .setRelayHost("localhost")
                 .setVirtualHost("/")
                 .setRelayPort(61613)
