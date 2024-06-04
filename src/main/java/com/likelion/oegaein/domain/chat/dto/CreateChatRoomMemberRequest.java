@@ -5,5 +5,4 @@ import lombok.Getter;
 @Getter
 public class CreateChatRoomMemberRequest {
     private Long chatRoomId;
-    private Long memberId;
 }

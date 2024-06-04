@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,10 +28,10 @@ public class ChatRoomMemberController {
     private final ChatRoomMemberService chatRoomMemberService;
 
     @PostMapping("/api/v1/chatroommembers")
-    public ResponseEntity<ResponseDto> postChatRoomMember(@RequestBody CreateChatRoomMemberRequest dto){
+    public ResponseEntity<ResponseDto> postChatRoomMember(@RequestBody CreateChatRoomMemberRequest dto, Authentication authentication){
         log.info("Request to post chatroom member");
         CreateChatRoomMemberResponse response = chatRoomMemberService.createChatRoomMember(
-                CreateChatRoomMemberData.toCreateChatRoomMemberData(dto));
+                CreateChatRoomMemberData.toCreateChatRoomMemberData(dto), authentication);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

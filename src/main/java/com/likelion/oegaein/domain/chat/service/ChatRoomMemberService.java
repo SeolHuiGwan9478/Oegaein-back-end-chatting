@@ -12,6 +12,7 @@ import com.likelion.oegaein.domain.member.entity.member.Member;
 import com.likelion.oegaein.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,10 +33,10 @@ public class ChatRoomMemberService {
     private final String NOT_FOUND_MEMBER_ERR_MSG = "찾을 수 없는 사용자입니다.";
 
     @Transactional
-    public CreateChatRoomMemberResponse createChatRoomMember(CreateChatRoomMemberData dto){
+    public CreateChatRoomMemberResponse createChatRoomMember(CreateChatRoomMemberData dto, Authentication authentication){
         ChatRoom findChatRoom = chatRoomRepository.findById(dto.getChatRoomId())
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_ERR_MSG));
-        Member authenticatedMember = memberRepository.findById(dto.getMemberId())
+        Member authenticatedMember = memberRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
         ChatRoomMember newChatRoomMember = ChatRoomMember.builder()
                 .member(authenticatedMember)

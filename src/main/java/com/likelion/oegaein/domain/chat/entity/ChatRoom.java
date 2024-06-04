@@ -43,5 +43,5 @@ public class ChatRoom {
     public void downMemberCount() {
         this.memberCount -= 1;
     }
-    public void upMemberCount() {this.memberCount += 1;}s
+    public void upMemberCount() {this.memberCount += 1;}
 }

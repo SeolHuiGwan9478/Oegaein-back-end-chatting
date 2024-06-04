@@ -13,6 +13,7 @@ import com.likelion.oegaein.domain.chat.repository.MessageRepository;
 import com.likelion.oegaein.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,9 +39,9 @@ public class ChatRoomService {
     private final String NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG = "찾을 수 없는 채팅방 참가자입니다.";
     private final String CHAT_ROOM_NAME_POSTFIX = " 행성방";
 
-    public FindChatRoomsResponse findChatRooms(Long memberId){
+    public FindChatRoomsResponse findChatRooms(Authentication authentication){
         // find login user
-        Member authenticatedMember = memberRepository.findById(memberId)
+        Member authenticatedMember = memberRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
         // find ChatRoomMembers
         List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByMember(authenticatedMember);
@@ -99,9 +100,9 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public DeleteChatRoomResponse removeOneToOneChatRoom(String roomId, Long memberId){
+    public DeleteChatRoomResponse removeOneToOneChatRoom(String roomId, Authentication authentication){
         // find chat member
-        Member authenticatedMember = memberRepository.findById(memberId)
+        Member authenticatedMember = memberRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
         // find ChatRoom
         ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
@@ -114,7 +115,7 @@ public class ChatRoomService {
         if(chatRoom.getMemberCount() == 0){ // 모두 방에서 나갔는지 확인
             chatRoomRepository.delete(chatRoom);
         }
-        return new DeleteChatRoomResponse(roomId, memberId);
+        return new DeleteChatRoomResponse(roomId, authenticatedMember.getId());
     }
 
     // custom method
