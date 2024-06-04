@@ -27,11 +27,11 @@ import java.time.LocalDateTime;
 public class ChatRoomMemberController {
     private final ChatRoomMemberService chatRoomMemberService;
 
-    @PostMapping("/api/v1/chatroommembers")
-    public ResponseEntity<ResponseDto> postChatRoomMember(@RequestBody CreateChatRoomMemberRequest dto, Authentication authentication){
-        log.info("Request to post chatroom member");
-        CreateChatRoomMemberResponse response = chatRoomMemberService.createChatRoomMember(
-                CreateChatRoomMemberData.toCreateChatRoomMemberData(dto), authentication);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+//    @PostMapping("/api/v1/chatroommembers")
+//    public ResponseEntity<ResponseDto> postChatRoomMember(@RequestBody CreateChatRoomMemberRequest dto, Authentication authentication){
+//        log.info("Request to post chatroom member");
+//        CreateChatRoomMemberResponse response = chatRoomMemberService.createChatRoomMember(
+//                CreateChatRoomMemberData.toCreateChatRoomMemberData(dto), authentication);
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
 }

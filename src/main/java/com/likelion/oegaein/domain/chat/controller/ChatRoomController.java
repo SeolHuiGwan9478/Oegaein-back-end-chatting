@@ -23,12 +23,12 @@ public class ChatRoomController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
-    @PostMapping("/api/v1/chatrooms") // 채팅방 생성
-    public ResponseEntity<ResponseDto> postChatRoom(@RequestBody CreateChatRoomRequest dto){
-        log.info("Request to post chatroom");
-        CreateChatRoomResponse response = chatRoomService.createChatRoom(CreateChatRoomData.toCreateChatRoomData(dto));
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+//    @PostMapping("/api/v1/chatrooms") // 채팅방 생성
+//    public ResponseEntity<ResponseDto> postChatRoom(@RequestBody CreateChatRoomRequest dto){
+//        log.info("Request to post chatroom");
+//        CreateChatRoomResponse response = chatRoomService.createChatRoom(CreateChatRoomData.toCreateChatRoomData(dto));
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
 
     @DeleteMapping("/api/v1/chatrooms/{roomid}") // 특정 채팅방 나가기
     public ResponseEntity<ResponseDto> deleteChatRoom(@PathVariable("roomid") String roomId, Authentication authentication){
