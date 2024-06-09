@@ -1,0 +1,24 @@
+version: '3.9'
+services:
+  redis-container:
+    image: redis:alpine
+    container_name: oegaein-redis
+    command: redis-server --port 6379
+    hostname: redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq-container:
+    image: rabbitmq:3-management-alpine
+    container_name: oegaein-rabbitmq
+    volumes:
+      - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+      - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+      - "61613:61613"
+    environment:
+      RABBITMQ_DEFAULT_USER: "oegaein-admin"
+      RABBITMQ_DEFAULT_PASS: "hufs9478"

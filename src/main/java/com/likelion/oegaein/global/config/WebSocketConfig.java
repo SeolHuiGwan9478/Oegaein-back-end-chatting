@@ -1,6 +1,7 @@
 package com.likelion.oegaein.global.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -13,6 +14,12 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketInterceptor webSocketInterceptor;
+    @Value("${WAS_SERVER_HOST}")
+    private String HOST_IP;
+    @Value("${RABBITMQ_DEFAULT_USER}")
+    private String RABBITMQ_USER;
+    @Value("${RABBITMQ_DEFAULT_PASS}")
+    private String RABBITMQ_PASS;
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/oegaein").setAllowedOriginPatterns("*").withSockJS();
@@ -24,11 +31,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.enableStompBrokerRelay("/topic")
                 .setSystemHeartbeatReceiveInterval(300000)
                 .setSystemHeartbeatSendInterval(300000)
-                .setRelayHost("localhost")
+                .setRelayHost(HOST_IP)
                 .setVirtualHost("/")
                 .setRelayPort(61613)
-                .setClientLogin("guest")
-                .setClientPasscode("guest");
+                .setClientLogin(RABBITMQ_USER)
+                .setClientPasscode(RABBITMQ_PASS);
     }
 
     public void configureClientInboundChannel(ChannelRegistration channelRegistration){

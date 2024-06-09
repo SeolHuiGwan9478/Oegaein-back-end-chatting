@@ -37,3 +37,4 @@ out/
 .vscode/
 # config files
 application.yaml
+!**/src/main/resources/keystore.p12
