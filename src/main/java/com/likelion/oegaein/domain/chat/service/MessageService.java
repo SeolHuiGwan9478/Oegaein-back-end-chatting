@@ -1,5 +1,6 @@
 package com.likelion.oegaein.domain.chat.service;
 
+import com.likelion.oegaein.domain.chat.entity.ChatRoom;
 import com.likelion.oegaein.domain.chat.entity.ChatRoomMember;
 import com.likelion.oegaein.domain.chat.dto.FindMessageData;
 import com.likelion.oegaein.domain.chat.dto.FindMessagesResponse;
@@ -7,7 +8,10 @@ import com.likelion.oegaein.domain.chat.dto.MessageRequestData;
 import com.likelion.oegaein.domain.chat.dto.MessageResponse;
 import com.likelion.oegaein.domain.chat.entity.Message;
 import com.likelion.oegaein.domain.chat.entity.MessageStatus;
+import com.likelion.oegaein.domain.chat.exception.ChatRoomException;
 import com.likelion.oegaein.domain.chat.exception.MessageException;
+import com.likelion.oegaein.domain.chat.repository.ChatRoomMemberRepository;
+import com.likelion.oegaein.domain.chat.repository.ChatRoomRepository;
 import com.likelion.oegaein.domain.chat.repository.MessageRepository;
 import com.likelion.oegaein.domain.chat.repository.RedisRepository;
 import com.likelion.oegaein.domain.chat.repository.query.ChatRoomMemberQueryRepository;
@@ -17,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,13 +33,16 @@ public class MessageService {
     // DI
     private final MessageRepository messageRepository;
     private final RedisRepository redisRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberQueryRepository chatRoomMemberQueryRepository;
     // constant
     private final String CHAT_LEAVE_MSG = "님이 퇴장하였습니다.";
     private final String MESSAGE_HEADER_ERR_MSG = "메세지 헤더를 찾을 수 없습니다.";
     private final String NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG = "찾을 수 없는 채팅방 참가자입니다.";
+    private final String NOT_FOUND_CHAT_ROOM_ERR_MSG = "찾을 수 없는 채팅방입니다.";
     private final String MESSAGE_HEADER_NAME_KEY = "name";
     private final String MESSAGE_HEADER_ROOM_ID_KEY = "roomId";
+    private final String MESSAGE_HEADER_PHOTO_URL_KEY = "photoUrl";
     private final int MAX_CACHE_SIZE_EACH_ROOM = 50;
 
     // save chatting content
@@ -46,6 +54,7 @@ public class MessageService {
         }
         String senderName = (String) sessionAttributes.get(MESSAGE_HEADER_NAME_KEY);
         String roomId = (String) sessionAttributes.get(MESSAGE_HEADER_ROOM_ID_KEY);
+        String photoUrl = (String) sessionAttributes.get(MESSAGE_HEADER_PHOTO_URL_KEY);
         ChatRoomMember chatRoomMember = chatRoomMemberQueryRepository.findByRoomIdAndName(roomId, senderName)
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG));
         if(dto.getMessageStatus().equals(MessageStatus.LEAVE)){ // LEAVE 메시지 변환
@@ -54,6 +63,7 @@ public class MessageService {
         Message message = Message.builder()
                 .roomId(roomId)
                 .senderName(senderName)
+                .photoUrl(photoUrl)
                 .message(dto.getMessage())
                 .messageStatus(dto.getMessageStatus())
                 .date(LocalDateTime.now())
@@ -91,9 +101,13 @@ public class MessageService {
         }else{ // cache hit
             messages = getMessagesInCache(roomId);
         }
+        ChatRoom findChatRoom = chatRoomRepository.findByRoomId(roomId)
+                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_ERR_MSG));
+        String roomName = findChatRoom.getRoomName();
+        int memberCount = findChatRoom.getMemberCount();
         // to FindMessageData
         List<FindMessageData> dto = messages.stream().map(FindMessageData::toFindMessageData).toList();
-        return new FindMessagesResponse(dto);
+        return new FindMessagesResponse(roomName, memberCount, dto);
     }
 
     // write back pattern

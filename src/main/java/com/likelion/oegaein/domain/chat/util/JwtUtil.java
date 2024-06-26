@@ -54,6 +54,7 @@ public class JwtUtil {
     }
 
     public Date extractExpiration(String token){
+        log.info(SECRET_KEY);
         return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody()
                 .getExpiration();
     }
@@ -63,7 +64,8 @@ public class JwtUtil {
     }
 
     public Boolean validateToken(String token){
-        return (!isTokenExpired(token) && !extractEmail(token).isBlank());
+        final String email = extractEmail(token);
+        return (!email.isBlank() && !isTokenExpired(token));
     }
 
     // access_token 가져오기

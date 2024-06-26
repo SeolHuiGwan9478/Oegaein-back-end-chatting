@@ -8,7 +8,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CreateChatRoomResponse implements ResponseDto {
     private Long id;
     private String roomId;

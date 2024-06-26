@@ -62,6 +62,7 @@ public class ChatRoomService {
                     if(allOfMessages.isEmpty()){
                         return FindChatRoomsData.builder()
                                 .id(chatRoom.getId())
+                                .photoUrl(authenticatedMember.getPhotoUrl())
                                 .roomId(roomId)
                                 .roomName(roomName)
                                 .memberCount(memberCount)
@@ -71,6 +72,7 @@ public class ChatRoomService {
                     // create response
                     return FindChatRoomsData.builder()
                             .id(chatRoom.getId())
+                            .photoUrl(authenticatedMember.getPhotoUrl())
                             .roomId(roomId)
                             .roomName(roomName)
                             .memberCount(memberCount)

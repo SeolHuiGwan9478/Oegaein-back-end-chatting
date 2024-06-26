@@ -1,21 +1,21 @@
-//package com.likelion.oegaein.redis;
-//
-//import com.likelion.oegaein.domain.chat.entity.Message;
-//import com.likelion.oegaein.domain.chat.entity.MessageStatus;
-//import com.likelion.oegaein.domain.chat.repository.MessageRepository;
-//import com.likelion.oegaein.domain.chat.repository.RedisRepository;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.util.StopWatch;
-//
-//import java.util.LinkedList;
-//import java.util.List;
-//import java.util.Queue;
-//
-//@SpringBootTest
-//public class RedisPerformanceTest {
+package com.likelion.oegaein.redis;
+
+import com.likelion.oegaein.domain.chat.entity.Message;
+import com.likelion.oegaein.domain.chat.entity.MessageStatus;
+import com.likelion.oegaein.domain.chat.repository.MessageRepository;
+import com.likelion.oegaein.domain.chat.repository.RedisRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.StopWatch;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
+@SpringBootTest
+public class RedisPerformanceTest {
 //    private StopWatch stopWatch;
 //    @BeforeEach
 //    public void setStopWatch(){
@@ -63,4 +63,4 @@
 //    private List<Message> getMessagesInCache(String roomId){
 //        return redisRepository.get(roomId).stream().toList();
 //    }
-//}
+}

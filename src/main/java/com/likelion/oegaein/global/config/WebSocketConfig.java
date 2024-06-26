@@ -35,7 +35,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setVirtualHost("/")
                 .setRelayPort(61613)
                 .setClientLogin(RABBITMQ_USER)
-                .setClientPasscode(RABBITMQ_PASS);
+                .setClientPasscode(RABBITMQ_PASS)
+                .setSystemLogin(RABBITMQ_USER)
+                .setSystemPasscode(RABBITMQ_PASS);
     }
 
     public void configureClientInboundChannel(ChannelRegistration channelRegistration){

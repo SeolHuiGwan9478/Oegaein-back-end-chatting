@@ -24,6 +24,7 @@ public class Message {
     private String id;
     private String roomId; // 채팅방 ID
     private String senderName; // 보낸 회원 이름
+    private String photoUrl;
     private String message; // 메시지 내용
     private MessageStatus messageStatus; // 메시지 타입
 

@@ -1,7 +1,6 @@
 package com.likelion.oegaein.domain.chat.repository.query;
 
 import com.likelion.oegaein.domain.chat.entity.ChatRoomMember;
-import com.likelion.oegaein.domain.chat.exception.ChatMemberException;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

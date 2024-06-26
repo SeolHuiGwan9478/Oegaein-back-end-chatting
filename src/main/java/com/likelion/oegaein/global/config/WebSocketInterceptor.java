@@ -42,19 +42,20 @@ public class WebSocketInterceptor implements ChannelInterceptor {
     private boolean handleMessage(StompHeaderAccessor accessor) {
         try {
             if (StompCommand.CONNECT.equals(accessor.getCommand())) { // command == CONNECT
-                log.info("Request");
                 Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
                 String authorization = accessor.getFirstNativeHeader("Authorization");
-                log.info("authorization {}", authorization);
                 if(authorization == null) throw new IllegalArgumentException(NOT_FOUND_AUTH_HEADER_ERR_MSG);
                 String accessToken = jwtUtil.getAccessToken(authorization);
+                log.info(accessToken);
                 String email = jwtUtil.extractEmail(accessToken);
+                log.info(email);
                 Member member = memberRepository.findByEmail(email)
                                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
                 Profile profile = member.getProfile();
                 sessionAttributes.put("name", profile.getName());
+                sessionAttributes.put("photoUrl", member.getPhotoUrl());
                 sessionAttributes.put("roomId", accessor.getFirstNativeHeader("roomId"));
-                log.info("test!!! {}", sessionAttributes);
+
                 accessor.setSessionAttributes(sessionAttributes);
                 return true;
             } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) { // command == DISCONNECT
