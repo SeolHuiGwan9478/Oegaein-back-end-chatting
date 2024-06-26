@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class MessageResponse implements ResponseDto {
     private String roomId; // 채팅방 ID
     private String senderName; // 보낸 회원 이름
+    private String photoUrl; // 프로필 사진
     private String message; // 메시지 내용
     private MessageStatus messageStatus; // 메시지 타입
     private LocalDateTime date; // 메시지 발신 날짜
@@ -25,5 +26,6 @@ public class MessageResponse implements ResponseDto {
         this.message = message.getMessage();
         this.messageStatus = message.getMessageStatus();
         this.date = message.getDate();
+        this.photoUrl = message.getPhotoUrl();
     }
 }

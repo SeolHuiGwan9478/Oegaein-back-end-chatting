@@ -8,9 +8,7 @@ import com.likelion.oegaein.domain.chat.dto.MessageRequestData;
 import com.likelion.oegaein.domain.chat.dto.MessageResponse;
 import com.likelion.oegaein.domain.chat.entity.Message;
 import com.likelion.oegaein.domain.chat.entity.MessageStatus;
-import com.likelion.oegaein.domain.chat.exception.ChatRoomException;
 import com.likelion.oegaein.domain.chat.exception.MessageException;
-import com.likelion.oegaein.domain.chat.repository.ChatRoomMemberRepository;
 import com.likelion.oegaein.domain.chat.repository.ChatRoomRepository;
 import com.likelion.oegaein.domain.chat.repository.MessageRepository;
 import com.likelion.oegaein.domain.chat.repository.RedisRepository;
@@ -21,7 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
