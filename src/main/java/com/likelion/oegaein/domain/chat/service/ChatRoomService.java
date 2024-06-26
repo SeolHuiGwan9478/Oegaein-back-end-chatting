@@ -4,6 +4,7 @@ import com.likelion.oegaein.domain.chat.dto.*;
 import com.likelion.oegaein.domain.chat.entity.ChatRoom;
 import com.likelion.oegaein.domain.chat.entity.ChatRoomMember;
 import com.likelion.oegaein.domain.chat.entity.Message;
+import com.likelion.oegaein.domain.chat.repository.RedisRepository;
 import com.likelion.oegaein.domain.matching.entity.MatchingPost;
 import com.likelion.oegaein.domain.matching.repository.MatchingPostRepository;
 import com.likelion.oegaein.domain.member.entity.member.Member;
@@ -32,6 +33,7 @@ public class ChatRoomService {
     private final MemberRepository memberRepository;
     private final MatchingPostRepository matchingPostRepository;
     private final MessageService messageService;
+    private final RedisRepository redisRepository;
     // constant
     private final String NOT_FOUND_MEMBER_ERR_MSG = "찾을 수 없는 사용자입니다.";
     private final String NOT_FOUND_MATCHING_POST_ERR_MSG = "찾을 수 없는 매칭글입니다.";
@@ -55,6 +57,8 @@ public class ChatRoomService {
                     LocalDateTime disconnectedAt = chatRoomMember.getDisconnectedAt();
                     // find unread messages
                     List<Message> unReadMessages = messageRepository.findByRoomIdAndDateAfterOrderByDateAsc(roomId, disconnectedAt);
+                    unReadMessages.addAll(redisRepository.get(roomId).stream().filter((message) -> message.getDate().isAfter(disconnectedAt)
+                    ).toList());
                     // find all of messages
                     FindMessagesResponse response = messageService.getMessages(roomId);
                     List<FindMessageData> allOfMessages = response.getData();
