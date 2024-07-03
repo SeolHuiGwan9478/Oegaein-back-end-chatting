@@ -119,11 +119,17 @@ public class ChatRoomService {
         ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByChatRoomAndMember(chatRoom, authenticatedMember)
                         .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG));
         chatRoomMemberRepository.delete(chatRoomMember);
-        chatRoom.downMemberCount();
+        decreaseMemberCount(chatRoom.getId());
         if(chatRoom.getMemberCount() == 0){ // 모두 방에서 나갔는지 확인
             chatRoomRepository.delete(chatRoom);
         }
         return new DeleteChatRoomResponse(roomId, authenticatedMember.getId());
+    }
+
+    @Transactional
+    public void decreaseMemberCount(Long id){
+        ChatRoom chatRoom = chatRoomRepository.findByIdWithPessimisticLock(id).orElseThrow();
+        chatRoom.downMemberCount();
     }
 
     // custom method
