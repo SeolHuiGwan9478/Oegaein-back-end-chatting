@@ -57,10 +57,12 @@ public class ChatRoomService {
                     LocalDateTime disconnectedAt = chatRoomMember.getDisconnectedAt();
                     // find unread messages
                     List<Message> unReadMessages = messageRepository.findByRoomIdAndDateAfterOrderByDateAsc(roomId, disconnectedAt);
-                    unReadMessages.addAll(redisRepository.get(roomId).stream().filter((message) -> message.getDate().isAfter(disconnectedAt)
-                    ).toList());
+                    if(redisRepository.get(roomId) != null){
+                        unReadMessages.addAll(redisRepository.get(roomId).stream().filter((message) -> message.getDate().isAfter(disconnectedAt)
+                        ).toList());
+                    }
                     // find all of messages
-                    FindMessagesResponse response = messageService.getMessages(roomId);
+                    FindMessagesResponse response = messageService.getMessages(roomId, authentication);
                     List<FindMessageData> allOfMessages = response.getData();
 
                     if(allOfMessages.isEmpty()){

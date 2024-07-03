@@ -24,6 +24,9 @@ public class ChatRoomController {
     }
     @DeleteMapping("/api/v1/chatrooms/{roomid}") // 특정 채팅방 나가기
     public ResponseEntity<ResponseDto> deleteChatRoom(@PathVariable("roomid") String roomId, Authentication authentication){
+        if(authentication == null){
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         log.info("Request to delete chatroom-{}", roomId);
         DeleteChatRoomResponse response = chatRoomService.removeOneToOneChatRoom(roomId, authentication);
         return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);

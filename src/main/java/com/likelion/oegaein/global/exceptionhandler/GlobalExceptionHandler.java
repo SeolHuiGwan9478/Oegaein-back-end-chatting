@@ -32,6 +32,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> handleGlobalException(Exception ex){
         Map<String, String> errors = new HashMap<>();
         errors.put(COMMON_ERR_MSG_KEY, STATUS_CODE_500_ERR_MSG_VALUE);
+        System.out.println(ex.getMessage());
         final ErrorResponseDto errorResponse = ErrorResponseDto.builder()
                 .errorMessages(errors)
                 .build();

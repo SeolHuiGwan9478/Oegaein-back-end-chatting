@@ -37,10 +37,13 @@ public class MessageController {
     }
 
     @GetMapping("/api/v1/messages/{roomId}") // 메세지 내용 전체 조회
-    public ResponseEntity<ResponseDto> getMessage(@PathVariable("roomId") String roomId){
+    public ResponseEntity<ResponseDto> getMessage(@PathVariable("roomId") String roomId, Authentication authentication){
         try {
             log.info("Request to get messages");
-            FindMessagesResponse response = chatService.getMessages(roomId);
+            if(authentication == null){
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+            FindMessagesResponse response = chatService.getMessages(roomId, authentication);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }catch (IllegalArgumentException e){
             log.error(e.getMessage());
