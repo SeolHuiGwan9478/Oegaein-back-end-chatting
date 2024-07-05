@@ -1,4 +1,3 @@
-#### 해당 레포지토리는 "외개인(Oegaein)" 프로젝트의 실시간 채팅 기능과 관련된 소스 코드를 저장하는 레포지토리입니다.
 # Team Logo
 <p align='center'><img width=200 src='https://github.com/SeolHuiGwan9478/Oegaein-back-end/assets/67581495/62998306-848c-4ae7-84a0-321c42eb92d5'/></p>
 
@@ -20,11 +19,8 @@ java -jar oegaein-0.0.1-SNAPSHOT.jar
 ```
 
 # 2. OverView
-## 2.1. Project Preview
-<p align='center'><img width="699" alt="image" src="https://github.com/SeolHuiGwan9478/Oegaein-back-end/assets/67581495/7080698d-7b33-4b3f-8662-c6d8dd4918a8"></p>
-
-## 2.2. Project Architecture
-<p align='center'><img width="723" alt="image" src="https://github.com/SeolHuiGwan9478/Oegaein-back-end/assets/67581495/e04d0377-9b7f-4ed2-ac17-6a4b0c05ca6e"></p>
+<p align="center">해당 레포지토리는 "외개인(Oegaein)" 프로젝트의 실시간 채팅 기능과 관련된 소스 코드를 저장하는 레포지토리입니다.</p>
+<p align="center"> 채팅 외 관련 코드는 https://github.com/SeolHuiGwan9478/Oegaein-back-end 를 참고하시길 바랍니다.
 
 # 3. Service Detail
 ## ℹ️ 매칭 신청 수락시 채팅방에 입장된다.
