@@ -24,7 +24,7 @@ java -jar oegaein-0.0.1-SNAPSHOT.jar
 
 # 3. Service Detail
 ## ℹ️ 매칭 신청 수락시 채팅방에 입장된다.
-|ChatRoom List|In ChatRoom|
+|ChatRoom List|
 |---|
 |<img width="260" alt="image" src="https://github.com/SeolHuiGwan9478/Oegaein-back-end-chatting/assets/67581495/34887ffd-87f0-4ba0-806a-bcc934c927ad">|
 |채팅방 목록|
