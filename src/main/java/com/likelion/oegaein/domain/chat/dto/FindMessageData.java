@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class FindMessageData {
     private String roomId; // 채팅방 ID
     private String photoUrl;
+    private Long senderId;
     private String senderName; // 보낸 회원 이름
     private String message; // 메시지 내용
     private MessageStatus messageStatus; // 메시지 타입
@@ -19,6 +20,7 @@ public class FindMessageData {
         FindMessageData newMessageData = new FindMessageData();
         newMessageData.setRoomId(message.getRoomId());
         newMessageData.setPhotoUrl(message.getPhotoUrl());
+        newMessageData.setSenderId(message.getSenderId());
         newMessageData.setSenderName(message.getSenderName());
         newMessageData.setMessage(message.getMessage());
         newMessageData.setMessageStatus(message.getMessageStatus());

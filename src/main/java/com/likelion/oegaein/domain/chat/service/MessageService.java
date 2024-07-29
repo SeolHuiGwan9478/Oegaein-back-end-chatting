@@ -46,10 +46,11 @@ public class MessageService {
     private final String NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG = "찾을 수 없는 채팅방 참가자입니다.";
     private final String NOT_FOUND_MEMBER_ERR_MSG = "찾을 수 없는 사용자입니다.";
     private final String NOT_FOUND_CHAT_ROOM_ERR_MSG = "찾을 수 없는 채팅방입니다.";
+    private final String MESSAGE_HEADER_SENDER_ID_KEY = "senderId";
     private final String MESSAGE_HEADER_NAME_KEY = "name";
     private final String MESSAGE_HEADER_ROOM_ID_KEY = "roomId";
     private final String MESSAGE_HEADER_PHOTO_URL_KEY = "photoUrl";
-    private final int MAX_CACHE_SIZE_EACH_ROOM = 50;
+    private final int MAX_CACHE_SIZE_EACH_ROOM = 100;
 
     // save chatting content
     public MessageResponse saveMessage(MessageRequestData dto, StompHeaderAccessor accessor){
@@ -58,6 +59,7 @@ public class MessageService {
         if(sessionAttributes == null){
             throw new MessageException(MESSAGE_HEADER_ERR_MSG);
         }
+        Long senderId = (Long) sessionAttributes.get(MESSAGE_HEADER_SENDER_ID_KEY);
         String senderName = (String) sessionAttributes.get(MESSAGE_HEADER_NAME_KEY);
         String roomId = (String) sessionAttributes.get(MESSAGE_HEADER_ROOM_ID_KEY);
         String photoUrl = (String) sessionAttributes.get(MESSAGE_HEADER_PHOTO_URL_KEY);
@@ -68,6 +70,7 @@ public class MessageService {
         }
         Message message = Message.builder()
                 .roomId(roomId)
+                .senderId(senderId)
                 .senderName(senderName)
                 .photoUrl(photoUrl)
                 .message(dto.getMessage())

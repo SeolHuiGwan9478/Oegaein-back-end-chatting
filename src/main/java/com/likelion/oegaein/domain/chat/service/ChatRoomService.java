@@ -90,6 +90,28 @@ public class ChatRoomService {
         return new FindChatRoomsResponse(findChatRoomsData.size(), findChatRoomsData);
     }
 
+    public FindUnreadMessageResponse findUnreadMessage(Authentication authentication){
+        // find login user
+        Member authenticatedMember = memberRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
+        // find ChatRoomMembers
+        List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByMember(authenticatedMember);
+        FindUnreadMessageResponse response = new FindUnreadMessageResponse(0);
+        chatRoomMembers.forEach((chatRoomMember -> {
+            ChatRoom chatRoom = chatRoomMember.getChatRoom();
+            String roomId = chatRoom.getRoomId();
+            LocalDateTime disconnectedAt = chatRoomMember.getDisconnectedAt();
+            // find unread messages
+            List<Message> unReadMessages = messageRepository.findByRoomIdAndDateAfterOrderByDateAsc(roomId, disconnectedAt);
+            if(redisRepository.get(roomId) != null){
+                unReadMessages.addAll(redisRepository.get(roomId).stream().filter((message) -> message.getDate().isAfter(disconnectedAt)
+                ).toList());
+            }
+            response.upTotalUnreadMessageCount(unReadMessages.size());
+        }));
+        return response;
+    }
+
     @Transactional
     public CreateChatRoomResponse createChatRoom(CreateChatRoomData dto){
         // find matchingPost

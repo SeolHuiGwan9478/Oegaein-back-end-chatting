@@ -38,7 +38,7 @@ public class SecurityConfig {
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         // Authentication config
         http.authorizeHttpRequests((configure) -> {
-            configure.requestMatchers("/api/v1/chatrooms**").authenticated();
+            configure.requestMatchers("/api/v1/chatrooms**", "/api/v1/chatrooms/**").authenticated();
             configure.requestMatchers("/api/v1/chatroommembers**").authenticated();
             configure.requestMatchers("/api/v1/messages**").authenticated();
             configure.requestMatchers("/oegaein").permitAll();

@@ -23,6 +23,7 @@ public class Message {
     @Id
     private String id;
     private String roomId; // 채팅방 ID
+    private Long senderId;
     private String senderName; // 보낸 회원 이름
     private String photoUrl;
     private String message; // 메시지 내용

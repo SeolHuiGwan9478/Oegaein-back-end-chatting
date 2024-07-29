@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MessageResponse implements ResponseDto {
     private String roomId; // 채팅방 ID
+    private Long senderId;
     private String senderName; // 보낸 회원 이름
     private String photoUrl; // 프로필 사진
     private String message; // 메시지 내용
@@ -22,6 +23,7 @@ public class MessageResponse implements ResponseDto {
 
     public MessageResponse(Message message){
         this.roomId = message.getRoomId();
+        this.senderId = message.getSenderId();
         this.senderName = message.getSenderName();
         this.message = message.getMessage();
         this.messageStatus = message.getMessageStatus();

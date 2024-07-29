@@ -22,6 +22,14 @@ public class ChatRoomController {
         FindChatRoomsResponse response = chatRoomService.findChatRooms(authentication);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
+    @GetMapping("/api/v1/chatrooms/unread")
+    public ResponseEntity<ResponseDto> getUnreadMessages(Authentication authentication){
+        log.info("Request to get unread messages");
+        FindUnreadMessageResponse response = chatRoomService.findUnreadMessage(authentication);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @DeleteMapping("/api/v1/chatrooms/{roomid}") // 특정 채팅방 나가기
     public ResponseEntity<ResponseDto> deleteChatRoom(@PathVariable("roomid") String roomId, Authentication authentication){
         if(authentication == null){

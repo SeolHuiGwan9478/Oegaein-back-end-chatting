@@ -46,12 +46,11 @@ public class WebSocketInterceptor implements ChannelInterceptor {
                 String authorization = accessor.getFirstNativeHeader("Authorization");
                 if(authorization == null) throw new IllegalArgumentException(NOT_FOUND_AUTH_HEADER_ERR_MSG);
                 String accessToken = jwtUtil.getAccessToken(authorization);
-                log.info(accessToken);
                 String email = jwtUtil.extractEmail(accessToken);
-                log.info(email);
                 Member member = memberRepository.findByEmail(email)
                                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
                 Profile profile = member.getProfile();
+                sessionAttributes.put("senderId", member.getId());
                 sessionAttributes.put("name", profile.getName());
                 sessionAttributes.put("photoUrl", member.getPhotoUrl());
                 sessionAttributes.put("roomId", accessor.getFirstNativeHeader("roomId"));

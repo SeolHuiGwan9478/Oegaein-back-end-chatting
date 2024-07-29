@@ -7,7 +7,8 @@ import lombok.Getter;
 @Getter
 public enum MessageStatus {
     MESSAGE("MESSAGE"),
-    LEAVE("LEAVE");
+    LEAVE("LEAVE"),
+    ENTER("ENTER");
 
     private String value;
     MessageStatus(String value){
