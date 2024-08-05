@@ -63,8 +63,6 @@ public class MessageService {
         String senderName = (String) sessionAttributes.get(MESSAGE_HEADER_NAME_KEY);
         String roomId = (String) sessionAttributes.get(MESSAGE_HEADER_ROOM_ID_KEY);
         String photoUrl = (String) sessionAttributes.get(MESSAGE_HEADER_PHOTO_URL_KEY);
-        ChatRoomMember chatRoomMember = chatRoomMemberQueryRepository.findByRoomIdAndName(roomId, senderName)
-                .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG));
         if(dto.getMessageStatus().equals(MessageStatus.LEAVE)){ // LEAVE 메시지 변환
             dto.setMessage(senderName + CHAT_LEAVE_MSG);
         }
@@ -127,7 +125,7 @@ public class MessageService {
             LocalDateTime createdAt = chatRoomMember.getCreatedAt();
             if(messageDate.isAfter(createdAt)) dto.add(FindMessageData.toFindMessageData(message));
         }
-        return new FindMessagesResponse(matchingPostId, matchingStatus, roomName, memberCount, dto);
+        return new FindMessagesResponse(matchingPost.getAuthor().getId(), matchingPostId, matchingStatus, roomName, memberCount, dto);
     }
 
     // write back pattern

@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class FindMessagesResponse implements ResponseDto {
+    private Long memberId;
     private Long matchingPostId;
     private MatchingStatus matchingStatus;
     private String roomName;

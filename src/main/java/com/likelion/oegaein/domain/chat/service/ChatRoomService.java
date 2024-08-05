@@ -107,6 +107,7 @@ public class ChatRoomService {
                 unReadMessages.addAll(redisRepository.get(roomId).stream().filter((message) -> message.getDate().isAfter(disconnectedAt)
                 ).toList());
             }
+            unReadMessages = unReadMessages.stream().distinct().toList(); // 중복 제거
             response.upTotalUnreadMessageCount(unReadMessages.size());
         }));
         return response;

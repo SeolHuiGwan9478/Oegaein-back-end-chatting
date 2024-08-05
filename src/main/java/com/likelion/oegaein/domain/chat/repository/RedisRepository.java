@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -17,9 +18,6 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedisRepository {
     private final RedisTemplate<String, LinkedList<Message>> redisTemplate;
-
-    @Value("${spring.redis.expire}")
-    private int expireTime;
 
     // checking contains key
     public Boolean containsKey(String roomId){
@@ -34,10 +32,9 @@ public class RedisRepository {
     // put value
     public void put(String roomId, Queue<Message> messageQueue){
         redisTemplate.opsForValue().set(roomId, new LinkedList<>(messageQueue));
-        redisTemplate.expire(roomId, expireTime, TimeUnit.MINUTES);
     }
 
-    // delete value
+    // delete values
     public void delete(String roomId){
         redisTemplate.delete(roomId);
     }
