@@ -4,6 +4,7 @@ import com.likelion.oegaein.domain.chat.dto.*;
 import com.likelion.oegaein.domain.chat.entity.ChatRoom;
 import com.likelion.oegaein.domain.chat.entity.ChatRoomMember;
 import com.likelion.oegaein.domain.chat.entity.Message;
+import com.likelion.oegaein.domain.chat.entity.MessageStatus;
 import com.likelion.oegaein.domain.chat.repository.RedisRepository;
 import com.likelion.oegaein.domain.matching.entity.MatchingPost;
 import com.likelion.oegaein.domain.matching.repository.MatchingPostRepository;
@@ -11,6 +12,7 @@ import com.likelion.oegaein.domain.member.entity.member.Member;
 import com.likelion.oegaein.domain.chat.repository.ChatRoomMemberRepository;
 import com.likelion.oegaein.domain.chat.repository.ChatRoomRepository;
 import com.likelion.oegaein.domain.chat.repository.MessageRepository;
+import com.likelion.oegaein.domain.member.entity.profile.Profile;
 import com.likelion.oegaein.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +42,7 @@ public class ChatRoomService {
     private final String NOT_FOUND_MATCHING_POST_ERR_MSG = "찾을 수 없는 매칭글입니다.";
     private final String NOT_FOUND_CHAT_ROOM_ERR_MSG = "찾을 수 없는 채팅방입니다.";
     private final String NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG = "찾을 수 없는 채팅방 참가자입니다.";
+    private final String CHATROOM_LEAVE_MESSAGE = "님이 떠났습니다.";
     private final String CHAT_ROOM_NAME_POSTFIX = " 행성방";
 
     public FindChatRoomsResponse findChatRooms(Authentication authentication){
@@ -55,12 +59,7 @@ public class ChatRoomService {
                     String roomName = chatRoom.getRoomName();
                     int memberCount = chatRoom.getMemberCount();
                     LocalDateTime disconnectedAt = chatRoomMember.getDisconnectedAt();
-                    // find unread messages
-                    List<Message> unReadMessages = messageRepository.findByRoomIdAndDateAfterOrderByDateAsc(roomId, disconnectedAt);
-                    if(redisRepository.get(roomId) != null){
-                        unReadMessages.addAll(redisRepository.get(roomId).stream().filter((message) -> message.getDate().isAfter(disconnectedAt)
-                        ).toList());
-                    }
+
                     // find all of messages
                     FindMessagesResponse response = messageService.getMessages(roomId, authentication);
                     List<FindMessageData> allOfMessages = response.getData();
@@ -75,6 +74,9 @@ public class ChatRoomService {
                                 .build();
                     }
                     FindMessageData lastMessage = allOfMessages.get(allOfMessages.size()-1);
+                    // find unread message
+                    List<FindMessageData> unReadMessages = allOfMessages.stream()
+                            .filter((message) -> message.getDate().isAfter(disconnectedAt)).toList();
                     // create response
                     return FindChatRoomsData.builder()
                             .id(chatRoom.getId())
@@ -135,15 +137,25 @@ public class ChatRoomService {
         // find chat member
         Member authenticatedMember = memberRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
+        Profile authenticatedMemberProfile = authenticatedMember.getProfile();
         // find ChatRoom
         ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_ERR_MSG));
+        Message authMemberLeaveMessage = Message.builder()
+                .roomId(chatRoom.getRoomId())
+                .senderName(authenticatedMemberProfile.getName())
+                .photoUrl(authenticatedMember.getPhotoUrl())
+                .message(authenticatedMemberProfile.getName() + CHATROOM_LEAVE_MESSAGE)
+                .messageStatus(MessageStatus.LEAVE)
+                .date(LocalDateTime.now()).build();
+        messageService.saveCreatedMessage(authMemberLeaveMessage);
         // find ChatRoomMember
         ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByChatRoomAndMember(chatRoom, authenticatedMember)
                         .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG));
         chatRoomMemberRepository.delete(chatRoomMember);
         decreaseMemberCount(chatRoom.getId());
         if(chatRoom.getMemberCount() == 0){ // 모두 방에서 나갔는지 확인
+            redisRepository.delete(chatRoom.getRoomId());
             chatRoomRepository.delete(chatRoom);
         }
         return new DeleteChatRoomResponse(roomId, authenticatedMember.getId());

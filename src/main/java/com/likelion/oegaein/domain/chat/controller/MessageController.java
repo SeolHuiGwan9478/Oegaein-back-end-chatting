@@ -40,9 +40,6 @@ public class MessageController {
     public ResponseEntity<ResponseDto> getMessage(@PathVariable("roomId") String roomId, Authentication authentication){
         try {
             log.info("Request to get messages");
-            if(authentication == null){
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
             FindMessagesResponse response = chatService.getMessages(roomId, authentication);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }catch (IllegalArgumentException e){

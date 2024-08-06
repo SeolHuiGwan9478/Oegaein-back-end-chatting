@@ -63,9 +63,6 @@ public class MessageService {
         String senderName = (String) sessionAttributes.get(MESSAGE_HEADER_NAME_KEY);
         String roomId = (String) sessionAttributes.get(MESSAGE_HEADER_ROOM_ID_KEY);
         String photoUrl = (String) sessionAttributes.get(MESSAGE_HEADER_PHOTO_URL_KEY);
-        if(dto.getMessageStatus().equals(MessageStatus.LEAVE)){ // LEAVE 메시지 변환
-            dto.setMessage(senderName + CHAT_LEAVE_MSG);
-        }
         Message message = Message.builder()
                 .roomId(roomId)
                 .senderId(senderId)
@@ -75,23 +72,29 @@ public class MessageService {
                 .messageStatus(dto.getMessageStatus())
                 .date(LocalDateTime.now())
                 .build(); // setting message
-        // check in redis cache
-        if(!redisRepository.containsKey(roomId)){
-            Queue<Message> q = new LinkedList<>();
-            q.add(message);
-            redisRepository.put(roomId, q);
-        }else{
-            Queue<Message> q = redisRepository.get(roomId);
-            q.add(message);
-            if(q.size() >= MAX_CACHE_SIZE_EACH_ROOM){
-                Queue<Message> tmpQ = new LinkedList<>();
-                for(int i = 0;i < MAX_CACHE_SIZE_EACH_ROOM;i++){
-                    tmpQ.add(q.poll());
-                }
-                commitMessageCache(tmpQ);
-            }
+        if(!redisRepository.containsKey(roomId) || redisRepository.get(roomId).isEmpty()){
+            List<Message> findMessages = getMessagesInDb(roomId);
+            // data in db
+            Queue<Message> q = new LinkedList<>(findMessages);
             redisRepository.put(roomId, q);
         }
+        Queue<Message> q = redisRepository.get(roomId);
+        q.add(message);
+        redisRepository.put(roomId, q);
+        return new MessageResponse(message);
+    }
+
+    public MessageResponse saveCreatedMessage(Message message){
+        String roomId = message.getRoomId();
+        if(!redisRepository.containsKey(roomId) || redisRepository.get(roomId).isEmpty()){
+            List<Message> findMessages = getMessagesInDb(roomId);
+            // data in db
+            Queue<Message> q = new LinkedList<>(findMessages);
+            redisRepository.put(roomId, q);
+        }
+        Queue<Message> q = redisRepository.get(roomId);
+        q.add(message);
+        redisRepository.put(roomId, q);
         return new MessageResponse(message);
     }
 
@@ -118,6 +121,10 @@ public class MessageService {
         MatchingPost matchingPost = findChatRoom.getMatchingPost();
         Long matchingPostId = matchingPost.getId();
         MatchingStatus matchingStatus = matchingPost.getMatchingStatus();
+        // split 100 numbers of messages
+        if(messages.size() > MAX_CACHE_SIZE_EACH_ROOM){
+            messages = new ArrayList<>(messages.subList(messages.size()-MAX_CACHE_SIZE_EACH_ROOM, messages.size()));
+        }
         // to FindMessageData
         List<FindMessageData> dto = new ArrayList<>();
         for (Message message:messages){
@@ -138,9 +145,8 @@ public class MessageService {
 
     // get messages in mongoDB
     private List<Message> getMessagesInDb(String roomId){
-        Pageable pageable = PageRequest.of(0, MAX_CACHE_SIZE_EACH_ROOM);
-        Page<Message> messages = messageRepository.findByRoomIdOrderByDateAsc(roomId, pageable);
-        return messages.getContent();
+        List<Message> messages = messageRepository.findTop100ByRoomIdOrderByDateDesc(roomId);
+        return messages.stream().sorted().toList();
     }
 
     // get messages in redis

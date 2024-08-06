@@ -40,8 +40,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests((configure) -> {
             configure.requestMatchers("/api/v1/chatrooms**", "/api/v1/chatrooms/**").authenticated();
             configure.requestMatchers("/api/v1/chatroommembers**").authenticated();
-            configure.requestMatchers("/api/v1/messages**").authenticated();
-            configure.requestMatchers("/oegaein").permitAll();
+            configure.requestMatchers("/api/v1/messages**", "/api/v1/messages/**").authenticated();
             configure.anyRequest().permitAll();
         });
         http.addFilterBefore(jwtAuthenticationFilter(), LogoutFilter.class);

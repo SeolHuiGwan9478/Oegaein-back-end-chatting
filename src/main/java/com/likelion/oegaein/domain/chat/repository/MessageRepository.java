@@ -8,10 +8,15 @@ import org.springframework.data.mongodb.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface MessageRepository extends MongoRepository<Message, String> {
     List<Message> findByRoomId(String roomId);
 
     List<Message> findByRoomIdAndDateAfterOrderByDateAsc(String roomId, LocalDateTime date);
-    Page<Message> findByRoomIdOrderByDateAsc(String roomId, Pageable pageable);
+    List<Message> findTop100ByRoomIdOrderByDateDesc(String roomId);
+
+
+    @Query(value = "{'roomId': ?0}", sort = "{'date': -1}")
+    List<Message> findTopByRoomId(String roomId, Pageable pageable);
 }

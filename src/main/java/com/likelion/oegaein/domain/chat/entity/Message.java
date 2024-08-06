@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
 
@@ -19,8 +21,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "messages")
-public class Message {
+public class Message implements Comparable<Message>{
     @Id
+    @Field(value = "_id", targetType = FieldType.OBJECT_ID)
     private String id;
     private String roomId; // 채팅방 ID
     private Long senderId;
@@ -33,4 +36,9 @@ public class Message {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @CreatedDate
     private LocalDateTime date; // 메시지 발신 날짜
+
+    @Override
+    public int compareTo(Message o) {
+        return this.date.compareTo(o.date);
+    }
 }
