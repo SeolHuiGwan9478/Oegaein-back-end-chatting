@@ -3,7 +3,7 @@ services:
   redis-container:
     image: redis:alpine
     container_name: oegaein-redis
-    command: redis-server --port 6379 --requirepass hufs9478@
+    command: redis-server --port 6379 --requirepass ${input_redis_password}
     hostname: redis
     ports:
       - "6379:6379"
@@ -16,5 +16,5 @@ services:
       - "5672:5672"
       - "61613:61613"
     environment:
-      RABBITMQ_DEFAULT_USER: "oegaein-admin"
-      RABBITMQ_DEFAULT_PASS: "hufs9478"
+      RABBITMQ_DEFAULT_USER: ${input_user_name}
+      RABBITMQ_DEFAULT_PASS: ${input_rabbitmq_password}
