@@ -59,6 +59,8 @@ public class ChatRoomService {
                     String roomName = chatRoom.getRoomName();
                     int memberCount = chatRoom.getMemberCount();
                     LocalDateTime disconnectedAt = chatRoomMember.getDisconnectedAt();
+                    MatchingPost matchingPost = chatRoom.getMatchingPost();
+                    Member author = matchingPost.getAuthor();
 
                     // find all of messages
                     FindMessagesResponse response = messageService.getMessages(roomId, authentication);
@@ -67,7 +69,7 @@ public class ChatRoomService {
                     if(allOfMessages.isEmpty()){
                         return FindChatRoomsData.builder()
                                 .id(chatRoom.getId())
-                                .photoUrl(authenticatedMember.getPhotoUrl())
+                                .photoUrl(author.getPhotoUrl())
                                 .roomId(roomId)
                                 .roomName(roomName)
                                 .memberCount(memberCount)
@@ -80,7 +82,7 @@ public class ChatRoomService {
                     // create response
                     return FindChatRoomsData.builder()
                             .id(chatRoom.getId())
-                            .photoUrl(authenticatedMember.getPhotoUrl())
+                            .photoUrl(author.getPhotoUrl())
                             .roomId(roomId)
                             .roomName(roomName)
                             .memberCount(memberCount)
@@ -137,18 +139,9 @@ public class ChatRoomService {
         // find chat member
         Member authenticatedMember = memberRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_MEMBER_ERR_MSG));
-        Profile authenticatedMemberProfile = authenticatedMember.getProfile();
         // find ChatRoom
         ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
                 .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_ERR_MSG));
-        Message authMemberLeaveMessage = Message.builder()
-                .roomId(chatRoom.getRoomId())
-                .senderName(authenticatedMemberProfile.getName())
-                .photoUrl(authenticatedMember.getPhotoUrl())
-                .message(authenticatedMemberProfile.getName() + CHATROOM_LEAVE_MESSAGE)
-                .messageStatus(MessageStatus.LEAVE)
-                .date(LocalDateTime.now()).build();
-        messageService.saveCreatedMessage(authMemberLeaveMessage);
         // find ChatRoomMember
         ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByChatRoomAndMember(chatRoom, authenticatedMember)
                         .orElseThrow(() -> new EntityNotFoundException(NOT_FOUND_CHAT_ROOM_MEMBER_ERR_MSG));

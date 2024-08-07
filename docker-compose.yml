@@ -1,9 +1,9 @@
-version: '3.9'
+version: '3.3'
 services:
   redis-container:
     image: redis:alpine
     container_name: oegaein-redis
-    command: redis-server --port 6379
+    command: redis-server --port 6379 --requirepass hufs9478@
     hostname: redis
     ports:
       - "6379:6379"
