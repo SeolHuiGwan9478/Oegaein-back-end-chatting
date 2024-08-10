@@ -19,6 +19,9 @@ java -jar oegaein-0.0.1-SNAPSHOT.jar
 ```
 
 # 2. OverView
+### 시연 영상
+https://github.com/user-attachments/assets/3dbad34e-2a8a-4a4f-a9a4-8600503c975a
+
 <p align="center">해당 레포지토리는 "외개인(Oegaein)" 프로젝트의 실시간 채팅 기능과 관련된 소스 코드를 저장하는 레포지토리입니다.</p>
 <p align="center"> 채팅 외 관련 코드는 https://github.com/SeolHuiGwan9478/Oegaein-back-end 를 참고하시길 바랍니다.
 
